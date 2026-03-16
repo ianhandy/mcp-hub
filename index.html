@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP Hub — Local MCP Server Dashboard</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#1A0D00;--bg2:#241200;--bg3:#2E1800;--bg4:#3A2000;
+    --gold:#DDC165;--gold-light:#FFE9A3;--orange:#E5591C;
+    --text:#E8D5B8;--text-dim:#9A8568;--text-bright:#FFF3DC;
+    --green:#4ADE80;--red:#F87171;--blue:#60A5FA;
+    --radius:10px;--glow:0 0 20px rgba(221,193,101,0.15);
+  }
+  html{font-size:15px}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',system-ui,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;
+    display:flex;flex-direction:column;overflow-x:hidden;
+  }
+
+  /* Header — menu bar style */
+  .menubar{
+    background:linear-gradient(180deg,var(--bg3),var(--bg2));
+    border-bottom:1px solid rgba(221,193,101,0.15);
+    padding:12px 24px;display:flex;align-items:center;gap:16px;
+    position:sticky;top:0;z-index:100;
+    backdrop-filter:blur(20px);
+  }
+  .menubar-icon{
+    width:32px;height:32px;border-radius:8px;
+    background:linear-gradient(135deg,var(--orange),var(--gold));
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;box-shadow:0 2px 8px rgba(229,89,28,0.4);
+  }
+  .menubar h1{
+    font-size:1.1rem;font-weight:600;color:var(--gold-light);
+    letter-spacing:-0.02em;
+  }
+  .menubar .subtitle{font-size:0.75rem;color:var(--text-dim);margin-left:4px}
+  .menubar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .server-count{
+    background:var(--bg4);border:1px solid rgba(221,193,101,0.2);
+    border-radius:20px;padding:4px 12px;font-size:0.75rem;color:var(--gold);
+    font-weight:500;
+  }
+
+  /* Main layout */
+  .app{display:flex;flex:1;min-height:0}
+  .sidebar{
+    width:280px;min-width:280px;background:var(--bg2);
+    border-right:1px solid rgba(221,193,101,0.1);
+    display:flex;flex-direction:column;overflow:hidden;
+  }
+  .sidebar-header{
+    padding:16px;border-bottom:1px solid rgba(221,193,101,0.08);
+    font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;
+    color:var(--text-dim);font-weight:600;
+  }
+  .server-list{flex:1;overflow-y:auto;padding:8px}
+  .server-item{
+    padding:10px 12px;border-radius:var(--radius);cursor:pointer;
+    margin-bottom:2px;transition:all 0.15s ease;display:flex;align-items:center;gap:10px;
+  }
+  .server-item:hover{background:var(--bg3)}
+  .server-item.active{background:var(--bg4);box-shadow:var(--glow)}
+  .server-dot{
+    width:8px;height:8px;border-radius:50%;flex-shrink:0;
+    background:var(--green);box-shadow:0 0 6px rgba(74,222,128,0.5);
+  }
+  .server-dot.stdio{background:var(--blue);box-shadow:0 0 6px rgba(96,165,250,0.5)}
+  .server-dot.error{background:var(--red);box-shadow:0 0 6px rgba(248,113,113,0.5)}
+  .server-name{font-size:0.85rem;font-weight:500;color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .server-type{font-size:0.65rem;color:var(--text-dim);margin-top:1px}
+  .server-info{overflow:hidden}
+
+  /* Main panel */
+  .main{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+
+  /* Welcome / drop zone */
+  .welcome{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:20px;
+  }
+  .drop-zone{
+    width:100%;max-width:560px;border:2px dashed rgba(221,193,101,0.25);
+    border-radius:16px;padding:48px 32px;transition:all 0.2s ease;
+    cursor:pointer;position:relative;
+  }
+  .drop-zone:hover,.drop-zone.drag-over{
+    border-color:var(--gold);background:rgba(221,193,101,0.04);
+    box-shadow:0 0 40px rgba(221,193,101,0.08);
+  }
+  .drop-zone h2{font-size:1.3rem;color:var(--gold-light);margin-bottom:8px;font-weight:600}
+  .drop-zone p{font-size:0.85rem;color:var(--text-dim);line-height:1.6}
+  .drop-zone code{
+    background:var(--bg4);padding:2px 8px;border-radius:4px;
+    font-size:0.8rem;color:var(--gold);
+  }
+  .drop-icon{
+    font-size:3rem;margin-bottom:8px;opacity:0.6;
+    animation:float 3s ease-in-out infinite;
+  }
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+  .or-divider{
+    font-size:0.75rem;color:var(--text-dim);margin:8px 0;
+    display:flex;align-items:center;gap:12px;width:100%;max-width:560px;
+  }
+  .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:rgba(221,193,101,0.15)}
+
+  .demo-btn{
+    background:linear-gradient(135deg,var(--orange),#D04A10);
+    color:#fff;border:none;padding:10px 24px;border-radius:8px;
+    font-size:0.85rem;font-weight:600;cursor:pointer;
+    transition:all 0.2s;box-shadow:0 4px 16px rgba(229,89,28,0.3);
+  }
+  .demo-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(229,89,28,0.4)}
+
+  .auto-detect-btn{
+    background:var(--bg3);border:1px solid rgba(221,193,101,0.2);
+    color:var(--gold);padding:10px 24px;border-radius:8px;
+    font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.2s;
+  }
+  .auto-detect-btn:hover{background:var(--bg4);border-color:var(--gold)}
+
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+
+  /* Server detail */
+  .detail-header{
+    display:flex;align-items:center;gap:16px;padding:20px;
+    background:linear-gradient(135deg,var(--bg3),var(--bg2));
+    border-radius:var(--radius);border:1px solid rgba(221,193,101,0.1);
+  }
+  .detail-icon{
+    width:48px;height:48px;border-radius:12px;
+    background:linear-gradient(135deg,var(--bg4),var(--bg3));
+    display:flex;align-items:center;justify-content:center;font-size:24px;
+    border:1px solid rgba(221,193,101,0.15);
+  }
+  .detail-title{font-size:1.2rem;font-weight:600;color:var(--gold-light)}
+  .detail-meta{font-size:0.75rem;color:var(--text-dim);margin-top:2px}
+  .detail-badge{
+    display:inline-flex;align-items:center;gap:4px;
+    background:var(--bg4);border:1px solid rgba(221,193,101,0.15);
+    border-radius:12px;padding:3px 10px;font-size:0.7rem;color:var(--gold);
+    margin-top:6px;
+  }
+  .detail-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+  /* Config panel */
+  .config-panel{
+    background:var(--bg2);border:1px solid rgba(221,193,101,0.1);
+    border-radius:var(--radius);overflow:hidden;
+  }
+  .config-panel summary{
+    padding:14px 16px;cursor:pointer;font-size:0.8rem;font-weight:600;
+    color:var(--gold);text-transform:uppercase;letter-spacing:0.05em;
+    border-bottom:1px solid rgba(221,193,101,0.08);
+    user-select:none;list-style:none;display:flex;align-items:center;gap:8px;
+  }
+  .config-panel summary::before{content:'▸';transition:transform 0.2s}
+  .config-panel[open] summary::before{transform:rotate(90deg)}
+  .config-panel .config-body{padding:16px}
+  .config-json{
+    background:var(--bg);border:1px solid rgba(221,193,101,0.08);
+    border-radius:8px;padding:14px;font-family:'SF Mono',Menlo,monospace;
+    font-size:0.75rem;color:var(--text);line-height:1.6;
+    overflow-x:auto;white-space:pre-wrap;word-break:break-all;
+  }
+
+  /* Tools grid */
+  .tools-section h3{
+    font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;
+    color:var(--text-dim);margin-bottom:12px;font-weight:600;
+    display:flex;align-items:center;gap:8px;
+  }
+  .tools-section h3 .count{
+    background:var(--bg4);padding:2px 8px;border-radius:10px;
+    font-size:0.7rem;color:var(--gold);
+  }
+  .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+  .tool-card{
+    background:var(--bg2);border:1px solid rgba(221,193,101,0.1);
+    border-radius:var(--radius);padding:14px;cursor:pointer;
+    transition:all 0.15s ease;position:relative;overflow:hidden;
+  }
+  .tool-card:hover{
+    border-color:rgba(221,193,101,0.3);background:var(--bg3);
+    box-shadow:var(--glow);transform:translateY(-1px);
+  }
+  .tool-card.expanded{
+    grid-column:1/-1;border-color:var(--gold);
+    box-shadow:0 0 30px rgba(221,193,101,0.1);
+  }
+  .tool-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,var(--orange),var(--gold));
+    opacity:0;transition:opacity 0.15s;
+  }
+  .tool-card:hover::before,.tool-card.expanded::before{opacity:1}
+  .tool-name{
+    font-size:0.85rem;font-weight:600;color:var(--gold-light);
+    display:flex;align-items:center;gap:6px;
+  }
+  .tool-name .fn-icon{font-size:0.7rem;opacity:0.5}
+  .tool-desc{font-size:0.75rem;color:var(--text-dim);margin-top:4px;line-height:1.5}
+
+  /* Tool detail (expanded) */
+  .tool-detail{margin-top:14px;padding-top:14px;border-top:1px solid rgba(221,193,101,0.1)}
+  .schema-section{margin-bottom:12px}
+  .schema-title{
+    font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;
+    color:var(--text-dim);margin-bottom:8px;font-weight:600;
+  }
+  .param-row{
+    display:flex;align-items:flex-start;gap:8px;padding:6px 10px;
+    border-radius:6px;font-size:0.78rem;
+    background:var(--bg);margin-bottom:4px;
+  }
+  .param-name{
+    font-family:'SF Mono',Menlo,monospace;color:var(--gold);
+    font-weight:500;min-width:100px;
+  }
+  .param-type{
+    font-family:'SF Mono',Menlo,monospace;color:var(--orange);
+    font-size:0.7rem;min-width:60px;
+  }
+  .param-desc{color:var(--text-dim);flex:1}
+  .param-required{
+    font-size:0.6rem;background:rgba(229,89,28,0.2);color:var(--orange);
+    padding:1px 6px;border-radius:4px;
+  }
+
+  /* Test panel */
+  .test-panel{
+    background:var(--bg);border:1px solid rgba(221,193,101,0.1);
+    border-radius:8px;padding:14px;margin-top:10px;
+  }
+  .test-panel h4{font-size:0.75rem;color:var(--gold);margin-bottom:10px;font-weight:600}
+  .test-input{
+    width:100%;background:var(--bg2);border:1px solid rgba(221,193,101,0.15);
+    color:var(--text);font-family:'SF Mono',Menlo,monospace;font-size:0.75rem;
+    padding:10px;border-radius:6px;resize:vertical;min-height:60px;
+    outline:none;transition:border-color 0.2s;
+  }
+  .test-input:focus{border-color:var(--gold)}
+  .test-btn{
+    margin-top:8px;background:var(--bg3);border:1px solid rgba(221,193,101,0.2);
+    color:var(--gold);padding:6px 16px;border-radius:6px;font-size:0.75rem;
+    cursor:pointer;transition:all 0.15s;font-weight:500;
+  }
+  .test-btn:hover{background:var(--bg4);border-color:var(--gold)}
+  .test-result{
+    margin-top:8px;padding:10px;background:var(--bg2);
+    border-radius:6px;font-family:'SF Mono',Menlo,monospace;
+    font-size:0.72rem;color:var(--text-dim);line-height:1.5;
+    white-space:pre-wrap;display:none;
+  }
+  .test-result.visible{display:block}
+
+  /* Env vars */
+  .env-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .env-tag{
+    background:var(--bg);border:1px solid rgba(221,193,101,0.1);
+    padding:3px 10px;border-radius:6px;font-size:0.7rem;
+    font-family:'SF Mono',Menlo,monospace;color:var(--text-dim);
+  }
+  .env-tag .key{color:var(--gold)}
+  .env-tag .val{color:var(--text-dim);opacity:0.7}
+
+  /* Scrollbar */
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(221,193,101,0.15);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(221,193,101,0.3)}
+
+  /* Toast */
+  .toast{
+    position:fixed;bottom:24px;right:24px;background:var(--bg3);
+    border:1px solid rgba(221,193,101,0.2);border-radius:10px;
+    padding:12px 20px;color:var(--gold);font-size:0.8rem;
+    box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:200;
+    transform:translateY(100px);opacity:0;transition:all 0.3s ease;
+  }
+  .toast.visible{transform:translateY(0);opacity:1}
+
+  /* Responsive */
+  @media(max-width:768px){
+    .sidebar{width:220px;min-width:220px}
+    .tools-grid{grid-template-columns:1fr}
+  }
+  @media(max-width:600px){
+    .app{flex-direction:column}
+    .sidebar{width:100%;min-width:100%;max-height:200px;border-right:none;border-bottom:1px solid rgba(221,193,101,0.1)}
+  }
+
+  /* Pulse animation for live dots */
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+  .server-dot{animation:pulse 2s ease-in-out infinite}
+
+  /* Fade in animation */
+  .fade-in{animation:fadeIn 0.3s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* Empty state */
+  .empty-tools{
+    text-align:center;padding:40px;color:var(--text-dim);font-size:0.85rem;
+  }
+  .empty-tools .icon{font-size:2rem;margin-bottom:8px;opacity:0.4}
+
+  /* Hidden file input */
+  .file-input{display:none}
+
+  /* Header input for paste */
+  .paste-area{display:none}
+</style>
+</head>
+<body>
+
+<div class="menubar">
+  <div class="menubar-icon">⚡</div>
+  <div>
+    <h1>MCP Hub</h1>
+    <span class="subtitle">Local Server Dashboard</span>
+  </div>
+  <div class="menubar-actions">
+    <span class="server-count" id="serverCount">0 servers</span>
+    <button class="auto-detect-btn" onclick="loadFromClipboard()" title="Paste config from clipboard">📋 Paste</button>
+  </div>
+</div>
+
+<div class="app">
+  <div class="sidebar" id="sidebar" style="display:none">
+    <div class="sidebar-header">MCP Servers</div>
+    <div class="server-list" id="serverList"></div>
+  </div>
+
+  <div class="main" id="main">
+    <div class="welcome" id="welcome">
+      <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <div class="drop-icon">🔌</div>
+        <h2>Load Your MCP Config</h2>
+        <p>
+          Drop your <code>claude_desktop_config.json</code> here<br>
+          or click to browse
+        </p>
+        <p style="margin-top:12px;font-size:0.75rem">
+          Usually found at<br>
+          <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>
+        </p>
+      </div>
+      <div class="or-divider">or</div>
+      <div class="btn-row">
+        <button class="demo-btn" onclick="loadDemo()">🎭 Load Demo Config</button>
+        <button class="auto-detect-btn" onclick="autoDetect()">🔍 Auto-Detect</button>
+      </div>
+    </div>
+
+    <div id="detail" style="display:none" class="fade-in"></div>
+  </div>
+</div>
+
+<input type="file" class="file-input" id="fileInput" accept=".json" onchange="handleFile(event)">
+<div class="toast" id="toast"></div>
+
+<script>
+let config = null;
+let servers = {};
+let activeServer = null;
+let expandedTool = null;
+
+// Demo MCP config
+const DEMO_CONFIG = {
+  mcpServers: {
+    "filesystem": {
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-filesystem", "/Users/demo/Documents"],
+      env: {}
+    },
+    "github": {
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-github"],
+      env: { GITHUB_PERSONAL_ACCESS_TOKEN: "ghp_***" }
+    },
+    "postgres": {
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost:5432/mydb"],
+      env: {}
+    },
+    "brave-search": {
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-brave-search"],
+      env: { BRAVE_API_KEY: "BSA***" }
+    },
+    "memory": {
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-memory"],
+      env: {}
+    },
+    "puppeteer": {
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-puppeteer"],
+      env: {}
+    },
+    "sqlite": {
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-sqlite", "--db-path", "/Users/demo/data.db"],
+      env: {}
+    },
+    "slack": {
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-slack"],
+      env: { SLACK_BOT_TOKEN: "xoxb-***", SLACK_TEAM_ID: "T0***" }
+    }
+  }
+};
+
+// Known MCP server tool schemas
+const KNOWN_TOOLS = {
+  "filesystem": [
+    { name: "read_file", description: "Read the complete contents of a file", params: [
+      { name: "path", type: "string", required: true, description: "Path to the file" }
+    ]},
+    { name: "write_file", description: "Create or overwrite a file with new contents", params: [
+      { name: "path", type: "string", required: true, description: "Path to the file" },
+      { name: "content", type: "string", required: true, description: "Content to write" }
+    ]},
+    { name: "list_directory", description: "List directory contents with [FILE] or [DIR] prefix", params: [
+      { name: "path", type: "string", required: true, description: "Path to directory" }
+    ]},
+    { name: "move_file", description: "Move or rename a file/directory", params: [
+      { name: "source", type: "string", required: true, description: "Source path" },
+      { name: "destination", type: "string", required: true, description: "Destination path" }
+    ]},
+    { name: "search_files", description: "Recursively search for files matching a pattern", params: [
+      { name: "path", type: "string", required: true, description: "Starting directory" },
+      { name: "pattern", type: "string", required: true, description: "Search pattern" }
+    ]},
+    { name: "get_file_info", description: "Get detailed metadata about a file or directory", params: [
+      { name: "path", type: "string", required: true, description: "Path to examine" }
+    ]},
+    { name: "list_allowed_directories", description: "List directories the server is allowed to access", params: []},
+  ],
+  "github": [
+    { name: "create_or_update_file", description: "Create or update a file in a GitHub repository", params: [
+      { name: "owner", type: "string", required: true, description: "Repository owner" },
+      { name: "repo", type: "string", required: true, description: "Repository name" },
+      { name: "path", type: "string", required: true, description: "File path" },
+      { name: "content", type: "string", required: true, description: "File content" },
+      { name: "message", type: "string", required: true, description: "Commit message" },
+      { name: "branch", type: "string", required: false, description: "Branch name" }
+    ]},
+    { name: "search_repositories", description: "Search for GitHub repositories", params: [
+      { name: "query", type: "string", required: true, description: "Search query" },
+      { name: "page", type: "number", required: false, description: "Page number" }
+    ]},
+    { name: "create_issue", description: "Create a new issue in a repository", params: [
+      { name: "owner", type: "string", required: true, description: "Repository owner" },
+      { name: "repo", type: "string", required: true, description: "Repository name" },
+      { name: "title", type: "string", required: true, description: "Issue title" },
+      { name: "body", type: "string", required: false, description: "Issue body" }
+    ]},
+    { name: "create_pull_request", description: "Create a new pull request", params: [
+      { name: "owner", type: "string", required: true, description: "Repository owner" },
+      { name: "repo", type: "string", required: true, description: "Repository name" },
+      { name: "title", type: "string", required: true, description: "PR title" },
+      { name: "head", type: "string", required: true, description: "Head branch" },
+      { name: "base", type: "string", required: true, description: "Base branch" }
+    ]},
+    { name: "list_issues", description: "List issues in a repository", params: [
+      { name: "owner", type: "string", required: true, description: "Repository owner" },
+      { name: "repo", type: "string", required: true, description: "Repository name" },
+      { name: "state", type: "string", required: false, description: "Filter: open, closed, all" }
+    ]},
+  ],
+  "postgres": [
+    { name: "query", description: "Execute a read-only SQL query", params: [
+      { name: "sql", type: "string", required: true, description: "SQL query to execute" }
+    ]},
+    { name: "list_tables", description: "List all tables in the database", params: []},
+    { name: "describe_table", description: "Get the schema for a specific table", params: [
+      { name: "table_name", type: "string", required: true, description: "Table name" }
+    ]},
+  ],
+  "brave-search": [
+    { name: "brave_web_search", description: "Search the web using Brave Search API", params: [
+      { name: "query", type: "string", required: true, description: "Search query" },
+      { name: "count", type: "number", required: false, description: "Number of results (max 20)" }
+    ]},
+    { name: "brave_local_search", description: "Search for local businesses and places", params: [
+      { name: "query", type: "string", required: true, description: "Local search query" },
+      { name: "count", type: "number", required: false, description: "Number of results" }
+    ]},
+  ],
+  "memory": [
+    { name: "create_entities", description: "Create new entities in the knowledge graph", params: [
+      { name: "entities", type: "array", required: true, description: "Array of entity objects" }
+    ]},
+    { name: "create_relations", description: "Create relations between entities", params: [
+      { name: "relations", type: "array", required: true, description: "Array of relation objects" }
+    ]},
+    { name: "search_nodes", description: "Search for nodes in the knowledge graph", params: [
+      { name: "query", type: "string", required: true, description: "Search query" }
+    ]},
+    { name: "open_nodes", description: "Open specific nodes by name", params: [
+      { name: "names", type: "array", required: true, description: "Array of node names" }
+    ]},
+    { name: "delete_entities", description: "Delete entities from the knowledge graph", params: [
+      { name: "entityNames", type: "array", required: true, description: "Names to delete" }
+    ]},
+  ],
+  "puppeteer": [
+    { name: "puppeteer_navigate", description: "Navigate to a URL in the browser", params: [
+      { name: "url", type: "string", required: true, description: "URL to navigate to" }
+    ]},
+    { name: "puppeteer_screenshot", description: "Take a screenshot of the current page", params: [
+      { name: "name", type: "string", required: true, description: "Screenshot name" },
+      { name: "selector", type: "string", required: false, description: "CSS selector" }
+    ]},
+    { name: "puppeteer_click", description: "Click an element on the page", params: [
+      { name: "selector", type: "string", required: true, description: "CSS selector" }
+    ]},
+    { name: "puppeteer_fill", description: "Fill out an input field", params: [
+      { name: "selector", type: "string", required: true, description: "CSS selector" },
+      { name: "value", type: "string", required: true, description: "Value to fill" }
+    ]},
+    { name: "puppeteer_evaluate", description: "Execute JavaScript in the browser", params: [
+      { name: "script", type: "string", required: true, description: "JavaScript code" }
+    ]},
+  ],
+  "sqlite": [
+    { name: "read_query", description: "Execute a SELECT query on the database", params: [
+      { name: "query", type: "string", required: true, description: "SELECT SQL query" }
+    ]},
+    { name: "write_query", description: "Execute an INSERT, UPDATE, or DELETE query", params: [
+      { name: "query", type: "string", required: true, description: "SQL query" }
+    ]},
+    { name: "create_table", description: "Create a new table in the database", params: [
+      { name: "query", type: "string", required: true, description: "CREATE TABLE SQL" }
+    ]},
+    { name: "list_tables", description: "List all tables in the database", params: []},
+    { name: "describe_table", description: "Get the schema of a table", params: [
+      { name: "table_name", type: "string", required: true, description: "Table name" }
+    ]},
+  ],
+  "slack": [
+    { name: "slack_list_channels", description: "List public Slack channels", params: [
+      { name: "limit", type: "number", required: false, description: "Max channels to return" }
+    ]},
+    { name: "slack_post_message", description: "Post a message to a Slack channel", params: [
+      { name: "channel_id", type: "string", required: true, description: "Channel ID" },
+      { name: "text", type: "string", required: true, description: "Message text" }
+    ]},
+    { name: "slack_reply_to_thread", description: "Reply to a message thread", params: [
+      { name: "channel_id", type: "string", required: true, description: "Channel ID" },
+      { name: "thread_ts", type: "string", required: true, description: "Thread timestamp" },
+      { name: "text", type: "string", required: true, description: "Reply text" }
+    ]},
+    { name: "slack_get_channel_history", description: "Get recent messages from a channel", params: [
+      { name: "channel_id", type: "string", required: true, description: "Channel ID" },
+      { name: "limit", type: "number", required: false, description: "Max messages" }
+    ]},
+  ],
+};
+
+// Icons for known servers
+const SERVER_ICONS = {
+  filesystem: '📁', github: '🐙', postgres: '🐘', 'brave-search': '🦁',
+  memory: '🧠', puppeteer: '🎭', sqlite: '💾', slack: '💬',
+  fetch: '🌐', 'google-maps': '🗺️', sentry: '🛡️', 'everything': '🔍',
+  docker: '🐳', git: '📦', redis: '🔴', stripe: '💳',
+};
+
+function getServerIcon(name) {
+  const lower = name.toLowerCase();
+  for (const [key, icon] of Object.entries(SERVER_ICONS)) {
+    if (lower.includes(key)) return icon;
+  }
+  return '⚙️';
+}
+
+function getTransportType(serverConfig) {
+  if (serverConfig.url) return 'sse';
+  if (serverConfig.command) return 'stdio';
+  return 'unknown';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+  setTimeout(() => t.classList.remove('visible'), 2500);
+}
+
+function loadConfig(data) {
+  try {
+    config = typeof data === 'string' ? JSON.parse(data) : data;
+    servers = config.mcpServers || config.MCP_SERVERS || config;
+    if (typeof servers !== 'object' || Array.isArray(servers)) throw new Error('Invalid config format');
+
+    const count = Object.keys(servers).length;
+    document.getElementById('serverCount').textContent = `${count} server${count !== 1 ? 's' : ''}`;
+    document.getElementById('sidebar').style.display = '';
+    document.getElementById('welcome').style.display = 'none';
+    document.getElementById('detail').style.display = 'none';
+
+    renderServerList();
+    if (count > 0) selectServer(Object.keys(servers)[0]);
+    showToast(`Loaded ${count} MCP servers`);
+  } catch (e) {
+    showToast('Error: ' + e.message);
+  }
+}
+
+function renderServerList() {
+  const list = document.getElementById('serverList');
+  list.innerHTML = '';
+  for (const [name, cfg] of Object.entries(servers)) {
+    const type = getTransportType(cfg);
+    const tools = KNOWN_TOOLS[name];
+    const el = document.createElement('div');
+    el.className = 'server-item' + (name === activeServer ? ' active' : '');
+    el.onclick = () => selectServer(name);
+    el.innerHTML = `
+      <div class="server-dot ${type}"></div>
+      <div class="server-info">
+        <div class="server-name">${getServerIcon(name)} ${name}</div>
+        <div class="server-type">${type}${tools ? ` · ${tools.length} tools` : ''}</div>
+      </div>
+    `;
+    list.appendChild(el);
+  }
+}
+
+function selectServer(name) {
+  activeServer = name;
+  expandedTool = null;
+  renderServerList();
+  renderDetail();
+}
+
+function renderDetail() {
+  const cfg = servers[activeServer];
+  const type = getTransportType(cfg);
+  const tools = KNOWN_TOOLS[activeServer] || [];
+  const detail = document.getElementById('detail');
+  detail.style.display = '';
+  detail.className = 'fade-in';
+
+  const envKeys = cfg.env ? Object.keys(cfg.env) : [];
+  const cmdLine = cfg.command ? [cfg.command, ...(cfg.args || [])].join(' ') : cfg.url || 'N/A';
+
+  let html = `
+    <div class="detail-header">
+      <div class="detail-icon">${getServerIcon(activeServer)}</div>
+      <div>
+        <div class="detail-title">${activeServer}</div>
+        <div class="detail-meta">${cmdLine}</div>
+        <div class="detail-badge"><span class="dot" style="background:${type === 'stdio' ? 'var(--blue)' : 'var(--green)'}"></span> ${type.toUpperCase()} transport</div>
+      </div>
+    </div>
+
+    ${envKeys.length ? `
+    <div style="margin-top:4px">
+      <div class="env-list">
+        ${envKeys.map(k => {
+          const v = cfg.env[k];
+          const masked = v.length > 6 ? v.slice(0, 4) + '•••' : '•••';
+          return `<span class="env-tag"><span class="key">${k}</span>=<span class="val">${masked}</span></span>`;
+        }).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    <details class="config-panel">
+      <summary>Raw Configuration</summary>
+      <div class="config-body">
+        <div class="config-json">${JSON.stringify(cfg, null, 2)}</div>
+      </div>
+    </details>
+  `;
+
+  if (tools.length > 0) {
+    html += `
+      <div class="tools-section">
+        <h3>Available Tools <span class="count">${tools.length}</span></h3>
+        <div class="tools-grid">
+          ${tools.map((t, i) => renderToolCard(t, i)).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    html += `
+      <div class="empty-tools">
+        <div class="icon">🔧</div>
+        <p>Tool schemas not available for this server.<br>
+        <span style="font-size:0.75rem;color:var(--text-dim)">
+          Connect to the running server to discover tools dynamically.
+        </span></p>
+      </div>
+    `;
+  }
+
+  detail.innerHTML = html;
+}
+
+function renderToolCard(tool, index) {
+  const isExpanded = expandedTool === index;
+  let html = `
+    <div class="tool-card${isExpanded ? ' expanded' : ''}" onclick="toggleTool(${index})">
+      <div class="tool-name"><span class="fn-icon">ƒ</span> ${tool.name}</div>
+      <div class="tool-desc">${tool.description}</div>
+  `;
+
+  if (isExpanded && tool.params) {
+    html += `<div class="tool-detail">`;
+
+    if (tool.params.length > 0) {
+      html += `
+        <div class="schema-section">
+          <div class="schema-title">Parameters</div>
+          ${tool.params.map(p => `
+            <div class="param-row">
+              <span class="param-name">${p.name}</span>
+              <span class="param-type">${p.type}</span>
+              <span class="param-desc">${p.description}</span>
+              ${p.required ? '<span class="param-required">required</span>' : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    // Test panel
+    const sampleInput = {};
+    tool.params.filter(p => p.required).forEach(p => {
+      if (p.type === 'string') sampleInput[p.name] = `<${p.name}>`;
+      else if (p.type === 'number') sampleInput[p.name] = 0;
+      else if (p.type === 'array') sampleInput[p.name] = [];
+      else sampleInput[p.name] = null;
+    });
+
+    html += `
+      <div class="test-panel" onclick="event.stopPropagation()">
+        <h4>🧪 Test Input</h4>
+        <textarea class="test-input" id="testInput-${index}" spellcheck="false">${JSON.stringify(sampleInput, null, 2)}</textarea>
+        <button class="test-btn" onclick="simulateTest(${index})">▶ Simulate Call</button>
+        <div class="test-result" id="testResult-${index}"></div>
+      </div>
+    `;
+
+    html += `</div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function toggleTool(index) {
+  expandedTool = expandedTool === index ? null : index;
+  renderDetail();
+}
+
+function simulateTest(index) {
+  const input = document.getElementById(`testInput-${index}`);
+  const result = document.getElementById(`testResult-${index}`);
+  try {
+    const parsed = JSON.parse(input.value);
+    const tools = KNOWN_TOOLS[activeServer];
+    const tool = tools[index];
+    result.className = 'test-result visible';
+    result.innerHTML = `<span style="color:var(--gold)">→ ${activeServer}.${tool.name}()</span>\n\n` +
+      `<span style="color:var(--text-dim)">// Simulated MCP request:</span>\n` +
+      `<span style="color:var(--green)">${JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/call",
+        params: { name: tool.name, arguments: parsed }
+      }, null, 2)}</span>\n\n` +
+      `<span style="color:var(--text-dim)">// This would be sent to the ${activeServer} MCP server via ${getTransportType(servers[activeServer])} transport.</span>`;
+  } catch (e) {
+    result.className = 'test-result visible';
+    result.innerHTML = `<span style="color:var(--red)">Invalid JSON: ${e.message}</span>`;
+  }
+}
+
+function handleFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => loadConfig(e.target.result);
+  reader.readAsText(file);
+}
+
+function loadDemo() {
+  loadConfig(DEMO_CONFIG);
+}
+
+function autoDetect() {
+  showToast('Auto-detect reads your local config — use the file picker or paste instead');
+  document.getElementById('fileInput').click();
+}
+
+async function loadFromClipboard() {
+  try {
+    const text = await navigator.clipboard.readText();
+    loadConfig(text);
+  } catch (e) {
+    showToast('Clipboard access denied — try drag & drop instead');
+  }
+}
+
+// Drag and drop
+const dropZone = document.getElementById('dropZone');
+['dragenter','dragover'].forEach(e => {
+  document.addEventListener(e, ev => {
+    ev.preventDefault();
+    dropZone && dropZone.classList.add('drag-over');
+  });
+});
+['dragleave','drop'].forEach(e => {
+  document.addEventListener(e, ev => {
+    ev.preventDefault();
+    dropZone && dropZone.classList.remove('drag-over');
+  });
+});
+document.addEventListener('drop', ev => {
+  const file = ev.dataTransfer.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => loadConfig(e.target.result);
+    reader.readAsText(file);
+  }
+});
+
+// Keyboard shortcut: Cmd+V to paste config
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'v' && !activeServer) {
+    loadFromClipboard();
+  }
+});
+</script>
+</body>
+</html>
