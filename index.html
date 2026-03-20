@@ -10,7 +10,7 @@
     --bg:#1A0D00;--bg2:#241200;--bg3:#2E1800;--bg4:#3A2000;
     --gold:#DDC165;--gold-light:#FFE9A3;--orange:#E5591C;
     --text:#E8D5B8;--text-dim:#9A8568;--text-bright:#FFF3DC;
-    --green:#4ADE80;--red:#F87171;--blue:#60A5FA;
+    --green:#4ADE80;--red:#F87171;--blue:#60A5FA;--purple:#C084FC;
     --radius:10px;--glow:0 0 20px rgba(221,193,101,0.15);
   }
   html{font-size:15px}
@@ -20,304 +20,402 @@
     display:flex;flex-direction:column;overflow-x:hidden;
   }
 
-  /* Header — menu bar style */
+  /* ── Particle background ── */
+  #particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+  /* ── Header ── */
   .menubar{
-    background:linear-gradient(180deg,var(--bg3),var(--bg2));
-    border-bottom:1px solid rgba(221,193,101,0.15);
-    padding:12px 24px;display:flex;align-items:center;gap:16px;
+    background:linear-gradient(180deg,rgba(46,24,0,0.95),rgba(26,13,0,0.95));
+    border-bottom:1px solid rgba(221,193,101,0.12);
+    padding:10px 24px;display:flex;align-items:center;gap:14px;
     position:sticky;top:0;z-index:100;
-    backdrop-filter:blur(20px);
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
   }
   .menubar-icon{
-    width:32px;height:32px;border-radius:8px;
+    width:34px;height:34px;border-radius:9px;
     background:linear-gradient(135deg,var(--orange),var(--gold));
     display:flex;align-items:center;justify-content:center;
-    font-size:18px;box-shadow:0 2px 8px rgba(229,89,28,0.4);
+    font-size:17px;box-shadow:0 2px 12px rgba(229,89,28,0.5);
+    animation:iconPulse 3s ease-in-out infinite;
   }
-  .menubar h1{
-    font-size:1.1rem;font-weight:600;color:var(--gold-light);
-    letter-spacing:-0.02em;
-  }
-  .menubar .subtitle{font-size:0.75rem;color:var(--text-dim);margin-left:4px}
+  @keyframes iconPulse{0%,100%{box-shadow:0 2px 12px rgba(229,89,28,0.5)}50%{box-shadow:0 2px 24px rgba(229,89,28,0.8)}}
+  .menubar h1{font-size:1.05rem;font-weight:700;color:var(--gold-light);letter-spacing:-0.02em}
+  .menubar .subtitle{font-size:0.7rem;color:var(--text-dim);margin-left:4px}
   .menubar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
   .server-count{
     background:var(--bg4);border:1px solid rgba(221,193,101,0.2);
-    border-radius:20px;padding:4px 12px;font-size:0.75rem;color:var(--gold);
-    font-weight:500;
+    border-radius:20px;padding:4px 12px;font-size:0.72rem;color:var(--gold);font-weight:500;
   }
+  .search-wrap{position:relative}
+  .search-input{
+    background:var(--bg4);border:1px solid rgba(221,193,101,0.15);
+    color:var(--text-bright);padding:6px 12px 6px 30px;border-radius:8px;
+    font-size:0.78rem;width:220px;outline:none;transition:all 0.2s;
+    font-family:inherit;
+  }
+  .search-input:focus{border-color:var(--gold);width:280px;box-shadow:0 0 16px rgba(221,193,101,0.1)}
+  .search-input::placeholder{color:var(--text-dim)}
+  .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:0.7rem;color:var(--text-dim)}
+  .search-results{
+    position:absolute;top:calc(100% + 6px);right:0;width:400px;
+    background:var(--bg3);border:1px solid rgba(221,193,101,0.2);
+    border-radius:var(--radius);max-height:400px;overflow-y:auto;
+    box-shadow:0 16px 48px rgba(0,0,0,0.6);display:none;z-index:200;
+  }
+  .search-results.visible{display:block}
+  .search-result-item{
+    padding:10px 14px;cursor:pointer;border-bottom:1px solid rgba(221,193,101,0.06);
+    transition:background 0.1s;
+  }
+  .search-result-item:hover{background:var(--bg4)}
+  .search-result-item:last-child{border-bottom:none}
+  .sr-name{font-size:0.82rem;font-weight:600;color:var(--gold-light)}
+  .sr-server{font-size:0.65rem;color:var(--text-dim);margin-top:1px}
+  .sr-desc{font-size:0.72rem;color:var(--text-dim);margin-top:2px}
+  .sr-highlight{color:var(--orange);font-weight:600}
 
-  /* Main layout */
-  .app{display:flex;flex:1;min-height:0}
+  .icon-btn{
+    background:var(--bg3);border:1px solid rgba(221,193,101,0.15);
+    color:var(--gold);width:32px;height:32px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    font-size:0.85rem;transition:all 0.15s;
+  }
+  .icon-btn:hover{background:var(--bg4);border-color:var(--gold)}
+
+  /* ── Main layout ── */
+  .app{display:flex;flex:1;min-height:0;position:relative;z-index:1}
+
+  /* ── Sidebar ── */
   .sidebar{
-    width:280px;min-width:280px;background:var(--bg2);
-    border-right:1px solid rgba(221,193,101,0.1);
+    width:260px;min-width:260px;background:rgba(36,18,0,0.92);
+    border-right:1px solid rgba(221,193,101,0.08);
     display:flex;flex-direction:column;overflow:hidden;
+    backdrop-filter:blur(16px);
   }
   .sidebar-header{
-    padding:16px;border-bottom:1px solid rgba(221,193,101,0.08);
-    font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;
-    color:var(--text-dim);font-weight:600;
+    padding:14px 16px 10px;font-size:0.65rem;text-transform:uppercase;
+    letter-spacing:0.12em;color:var(--text-dim);font-weight:700;
+    display:flex;align-items:center;justify-content:space-between;
   }
-  .server-list{flex:1;overflow-y:auto;padding:8px}
+  .view-toggle{display:flex;gap:2px}
+  .view-toggle button{
+    background:none;border:1px solid rgba(221,193,101,0.1);color:var(--text-dim);
+    width:26px;height:22px;border-radius:5px;cursor:pointer;font-size:0.65rem;
+    transition:all 0.15s;display:flex;align-items:center;justify-content:center;
+  }
+  .view-toggle button.active{background:var(--bg4);color:var(--gold);border-color:rgba(221,193,101,0.25)}
+  .server-list{flex:1;overflow-y:auto;padding:6px 8px}
   .server-item{
-    padding:10px 12px;border-radius:var(--radius);cursor:pointer;
+    padding:10px 12px;border-radius:8px;cursor:pointer;
     margin-bottom:2px;transition:all 0.15s ease;display:flex;align-items:center;gap:10px;
+    position:relative;overflow:hidden;
   }
-  .server-item:hover{background:var(--bg3)}
-  .server-item.active{background:var(--bg4);box-shadow:var(--glow)}
+  .server-item:hover{background:rgba(58,32,0,0.6)}
+  .server-item.active{background:var(--bg4);box-shadow:inset 3px 0 0 var(--gold)}
   .server-dot{
     width:8px;height:8px;border-radius:50%;flex-shrink:0;
-    background:var(--green);box-shadow:0 0 6px rgba(74,222,128,0.5);
+    background:var(--green);box-shadow:0 0 8px rgba(74,222,128,0.6);
+    animation:dotPulse 2.5s ease-in-out infinite;
   }
-  .server-dot.stdio{background:var(--blue);box-shadow:0 0 6px rgba(96,165,250,0.5)}
-  .server-dot.error{background:var(--red);box-shadow:0 0 6px rgba(248,113,113,0.5)}
-  .server-name{font-size:0.85rem;font-weight:500;color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .server-type{font-size:0.65rem;color:var(--text-dim);margin-top:1px}
+  @keyframes dotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.6;transform:scale(0.85)}}
+  .server-dot.stdio{background:var(--blue);box-shadow:0 0 8px rgba(96,165,250,0.6)}
+  .server-dot.sse{background:var(--green);box-shadow:0 0 8px rgba(74,222,128,0.6)}
+  .server-dot.error{background:var(--red);box-shadow:0 0 8px rgba(248,113,113,0.6)}
+  .server-name{font-size:0.82rem;font-weight:500;color:var(--text-bright);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .server-type{font-size:0.62rem;color:var(--text-dim);margin-top:2px}
   .server-info{overflow:hidden}
+  .tool-count-badge{
+    margin-left:auto;background:rgba(221,193,101,0.1);
+    padding:2px 7px;border-radius:10px;font-size:0.62rem;color:var(--gold);
+    font-weight:600;flex-shrink:0;
+  }
 
-  /* Main panel */
-  .main{flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:20px}
+  /* ── Stats bar ── */
+  .stats-bar{
+    padding:12px 16px;border-top:1px solid rgba(221,193,101,0.08);
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;
+  }
+  .stat-item{text-align:center}
+  .stat-value{font-size:1.1rem;font-weight:700;color:var(--gold-light)}
+  .stat-label{font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-dim);margin-top:1px}
 
-  /* Welcome / drop zone */
+  /* ── Main panel ── */
+  .main{flex:1;overflow-y:auto;padding:0;display:flex;flex-direction:column;position:relative}
+
+  /* ── Welcome / drop zone ── */
   .welcome{
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    text-align:center;gap:20px;
+    text-align:center;gap:20px;padding:40px 24px;
   }
   .drop-zone{
-    width:100%;max-width:560px;border:2px dashed rgba(221,193,101,0.25);
-    border-radius:16px;padding:48px 32px;transition:all 0.2s ease;
-    cursor:pointer;position:relative;
+    width:100%;max-width:520px;border:2px dashed rgba(221,193,101,0.2);
+    border-radius:20px;padding:48px 32px;transition:all 0.3s ease;
+    cursor:pointer;position:relative;background:rgba(36,18,0,0.4);
   }
   .drop-zone:hover,.drop-zone.drag-over{
-    border-color:var(--gold);background:rgba(221,193,101,0.04);
-    box-shadow:0 0 40px rgba(221,193,101,0.08);
+    border-color:var(--gold);background:rgba(221,193,101,0.03);
+    box-shadow:0 0 60px rgba(221,193,101,0.08);
   }
-  .drop-zone h2{font-size:1.3rem;color:var(--gold-light);margin-bottom:8px;font-weight:600}
-  .drop-zone p{font-size:0.85rem;color:var(--text-dim);line-height:1.6}
-  .drop-zone code{
-    background:var(--bg4);padding:2px 8px;border-radius:4px;
-    font-size:0.8rem;color:var(--gold);
-  }
-  .drop-icon{
-    font-size:3rem;margin-bottom:8px;opacity:0.6;
-    animation:float 3s ease-in-out infinite;
-  }
+  .drop-zone h2{font-size:1.2rem;color:var(--gold-light);margin-bottom:8px;font-weight:700}
+  .drop-zone p{font-size:0.82rem;color:var(--text-dim);line-height:1.6}
+  .drop-zone code{background:var(--bg4);padding:2px 8px;border-radius:4px;font-size:0.75rem;color:var(--gold)}
+  .drop-icon{font-size:2.5rem;margin-bottom:8px;opacity:0.7;animation:float 3s ease-in-out infinite}
   @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 
   .or-divider{
-    font-size:0.75rem;color:var(--text-dim);margin:8px 0;
-    display:flex;align-items:center;gap:12px;width:100%;max-width:560px;
+    font-size:0.72rem;color:var(--text-dim);margin:6px 0;
+    display:flex;align-items:center;gap:12px;width:100%;max-width:520px;
   }
-  .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:rgba(221,193,101,0.15)}
+  .or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:rgba(221,193,101,0.12)}
 
   .demo-btn{
     background:linear-gradient(135deg,var(--orange),#D04A10);
     color:#fff;border:none;padding:10px 24px;border-radius:8px;
-    font-size:0.85rem;font-weight:600;cursor:pointer;
-    transition:all 0.2s;box-shadow:0 4px 16px rgba(229,89,28,0.3);
+    font-size:0.82rem;font-weight:600;cursor:pointer;
+    transition:all 0.2s;box-shadow:0 4px 20px rgba(229,89,28,0.35);
   }
-  .demo-btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(229,89,28,0.4)}
-
+  .demo-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(229,89,28,0.5)}
   .auto-detect-btn{
     background:var(--bg3);border:1px solid rgba(221,193,101,0.2);
     color:var(--gold);padding:10px 24px;border-radius:8px;
-    font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.2s;
+    font-size:0.82rem;font-weight:500;cursor:pointer;transition:all 0.2s;
   }
   .auto-detect-btn:hover{background:var(--bg4);border-color:var(--gold)}
-
   .btn-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 
-  /* Server detail */
+  /* ── Network Graph View ── */
+  #graphView{display:none;flex:1;position:relative}
+  #graphCanvas{width:100%;height:100%;display:block}
+
+  /* ── Detail view ── */
+  #detailView{display:none;flex:1;overflow-y:auto;padding:24px}
+
+  /* ── Overview ── */
+  #overviewView{display:none;flex:1;overflow-y:auto;padding:24px}
+  .overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  .overview-card{
+    background:var(--bg2);border:1px solid rgba(221,193,101,0.1);
+    border-radius:var(--radius);padding:16px;cursor:pointer;
+    transition:all 0.2s;position:relative;overflow:hidden;
+  }
+  .overview-card:hover{border-color:rgba(221,193,101,0.3);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+  .overview-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg,var(--orange),var(--gold));opacity:0;transition:opacity 0.2s;
+  }
+  .overview-card:hover::before{opacity:1}
+  .oc-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .oc-icon{font-size:1.6rem}
+  .oc-name{font-size:0.9rem;font-weight:600;color:var(--gold-light)}
+  .oc-transport{font-size:0.62rem;color:var(--text-dim)}
+  .oc-tools{display:flex;flex-wrap:wrap;gap:4px}
+  .oc-tool-tag{
+    background:var(--bg);padding:3px 8px;border-radius:5px;
+    font-size:0.65rem;color:var(--text-dim);font-family:'SF Mono',Menlo,monospace;
+  }
+  .oc-tool-more{font-size:0.65rem;color:var(--gold);padding:3px 4px}
+
+  /* ── Detail header ── */
   .detail-header{
     display:flex;align-items:center;gap:16px;padding:20px;
     background:linear-gradient(135deg,var(--bg3),var(--bg2));
-    border-radius:var(--radius);border:1px solid rgba(221,193,101,0.1);
+    border-radius:12px;border:1px solid rgba(221,193,101,0.1);
+    position:relative;overflow:hidden;
   }
+  .detail-header::after{
+    content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,var(--orange),var(--gold),var(--orange));
+    background-size:200% 100%;animation:shimmer 3s linear infinite;
+  }
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
   .detail-icon{
-    width:48px;height:48px;border-radius:12px;
+    width:52px;height:52px;border-radius:14px;
     background:linear-gradient(135deg,var(--bg4),var(--bg3));
-    display:flex;align-items:center;justify-content:center;font-size:24px;
+    display:flex;align-items:center;justify-content:center;font-size:26px;
     border:1px solid rgba(221,193,101,0.15);
   }
-  .detail-title{font-size:1.2rem;font-weight:600;color:var(--gold-light)}
-  .detail-meta{font-size:0.75rem;color:var(--text-dim);margin-top:2px}
+  .detail-title{font-size:1.2rem;font-weight:700;color:var(--gold-light)}
+  .detail-meta{font-size:0.72rem;color:var(--text-dim);margin-top:3px;font-family:'SF Mono',Menlo,monospace}
+  .detail-badges{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
   .detail-badge{
     display:inline-flex;align-items:center;gap:4px;
-    background:var(--bg4);border:1px solid rgba(221,193,101,0.15);
-    border-radius:12px;padding:3px 10px;font-size:0.7rem;color:var(--gold);
-    margin-top:6px;
+    background:var(--bg4);border:1px solid rgba(221,193,101,0.12);
+    border-radius:12px;padding:3px 10px;font-size:0.68rem;color:var(--gold);
   }
   .detail-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+  .back-btn{
+    position:absolute;top:16px;right:16px;background:var(--bg);border:1px solid rgba(221,193,101,0.15);
+    color:var(--text-dim);padding:4px 12px;border-radius:6px;font-size:0.72rem;
+    cursor:pointer;transition:all 0.15s;
+  }
+  .back-btn:hover{color:var(--gold);border-color:var(--gold)}
 
-  /* Config panel */
+  /* ── Config panel ── */
   .config-panel{
-    background:var(--bg2);border:1px solid rgba(221,193,101,0.1);
-    border-radius:var(--radius);overflow:hidden;
+    background:var(--bg2);border:1px solid rgba(221,193,101,0.08);
+    border-radius:var(--radius);overflow:hidden;margin-top:16px;
   }
   .config-panel summary{
-    padding:14px 16px;cursor:pointer;font-size:0.8rem;font-weight:600;
-    color:var(--gold);text-transform:uppercase;letter-spacing:0.05em;
-    border-bottom:1px solid rgba(221,193,101,0.08);
+    padding:12px 16px;cursor:pointer;font-size:0.72rem;font-weight:600;
+    color:var(--gold);text-transform:uppercase;letter-spacing:0.06em;
+    border-bottom:1px solid rgba(221,193,101,0.06);
     user-select:none;list-style:none;display:flex;align-items:center;gap:8px;
   }
   .config-panel summary::before{content:'▸';transition:transform 0.2s}
   .config-panel[open] summary::before{transform:rotate(90deg)}
-  .config-panel .config-body{padding:16px}
+  .config-body{padding:14px}
   .config-json{
-    background:var(--bg);border:1px solid rgba(221,193,101,0.08);
+    background:var(--bg);border:1px solid rgba(221,193,101,0.06);
     border-radius:8px;padding:14px;font-family:'SF Mono',Menlo,monospace;
-    font-size:0.75rem;color:var(--text);line-height:1.6;
+    font-size:0.72rem;color:var(--text);line-height:1.6;
     overflow-x:auto;white-space:pre-wrap;word-break:break-all;
   }
 
-  /* Tools grid */
+  /* ── Env tags ── */
+  .env-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .env-tag{
+    background:var(--bg);border:1px solid rgba(221,193,101,0.08);
+    padding:3px 10px;border-radius:6px;font-size:0.68rem;
+    font-family:'SF Mono',Menlo,monospace;color:var(--text-dim);
+  }
+  .env-tag .key{color:var(--gold)}
+  .env-tag .val{opacity:0.6}
+
+  /* ── Tools section ── */
+  .tools-section{margin-top:20px}
   .tools-section h3{
-    font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;
-    color:var(--text-dim);margin-bottom:12px;font-weight:600;
+    font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;
+    color:var(--text-dim);margin-bottom:12px;font-weight:700;
     display:flex;align-items:center;gap:8px;
   }
   .tools-section h3 .count{
     background:var(--bg4);padding:2px 8px;border-radius:10px;
-    font-size:0.7rem;color:var(--gold);
+    font-size:0.68rem;color:var(--gold);
   }
-  .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+  .tools-filter{
+    background:var(--bg);border:1px solid rgba(221,193,101,0.1);
+    color:var(--text);padding:6px 12px;border-radius:6px;font-size:0.75rem;
+    outline:none;width:100%;margin-bottom:12px;font-family:inherit;transition:border-color 0.2s;
+  }
+  .tools-filter:focus{border-color:var(--gold)}
+  .tools-filter::placeholder{color:var(--text-dim)}
+  .tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+
   .tool-card{
-    background:var(--bg2);border:1px solid rgba(221,193,101,0.1);
+    background:var(--bg2);border:1px solid rgba(221,193,101,0.08);
     border-radius:var(--radius);padding:14px;cursor:pointer;
-    transition:all 0.15s ease;position:relative;overflow:hidden;
+    transition:all 0.2s ease;position:relative;overflow:hidden;
   }
-  .tool-card:hover{
-    border-color:rgba(221,193,101,0.3);background:var(--bg3);
-    box-shadow:var(--glow);transform:translateY(-1px);
-  }
-  .tool-card.expanded{
-    grid-column:1/-1;border-color:var(--gold);
-    box-shadow:0 0 30px rgba(221,193,101,0.1);
-  }
+  .tool-card:hover{border-color:rgba(221,193,101,0.25);background:var(--bg3);transform:translateY(-1px)}
+  .tool-card.expanded{grid-column:1/-1;border-color:rgba(221,193,101,0.3);box-shadow:0 0 40px rgba(221,193,101,0.06)}
   .tool-card::before{
     content:'';position:absolute;top:0;left:0;right:0;height:2px;
     background:linear-gradient(90deg,var(--orange),var(--gold));
     opacity:0;transition:opacity 0.15s;
   }
   .tool-card:hover::before,.tool-card.expanded::before{opacity:1}
-  .tool-name{
-    font-size:0.85rem;font-weight:600;color:var(--gold-light);
-    display:flex;align-items:center;gap:6px;
-  }
-  .tool-name .fn-icon{font-size:0.7rem;opacity:0.5}
-  .tool-desc{font-size:0.75rem;color:var(--text-dim);margin-top:4px;line-height:1.5}
+  .tool-name{font-size:0.82rem;font-weight:600;color:var(--gold-light);display:flex;align-items:center;gap:6px}
+  .tool-name .fn-icon{font-size:0.68rem;opacity:0.4;font-family:'SF Mono',Menlo,monospace;color:var(--orange)}
+  .tool-desc{font-size:0.72rem;color:var(--text-dim);margin-top:4px;line-height:1.5}
 
-  /* Tool detail (expanded) */
-  .tool-detail{margin-top:14px;padding-top:14px;border-top:1px solid rgba(221,193,101,0.1)}
-  .schema-section{margin-bottom:12px}
-  .schema-title{
-    font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;
-    color:var(--text-dim);margin-bottom:8px;font-weight:600;
-  }
+  /* ── Tool detail (expanded) ── */
+  .tool-detail{margin-top:14px;padding-top:14px;border-top:1px solid rgba(221,193,101,0.08)}
+  .schema-title{font-size:0.68rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim);margin-bottom:8px;font-weight:700}
   .param-row{
-    display:flex;align-items:flex-start;gap:8px;padding:6px 10px;
-    border-radius:6px;font-size:0.78rem;
-    background:var(--bg);margin-bottom:4px;
+    display:flex;align-items:flex-start;gap:8px;padding:7px 10px;
+    border-radius:6px;font-size:0.75rem;background:var(--bg);margin-bottom:3px;
   }
-  .param-name{
-    font-family:'SF Mono',Menlo,monospace;color:var(--gold);
-    font-weight:500;min-width:100px;
-  }
-  .param-type{
-    font-family:'SF Mono',Menlo,monospace;color:var(--orange);
-    font-size:0.7rem;min-width:60px;
-  }
+  .param-name{font-family:'SF Mono',Menlo,monospace;color:var(--gold);font-weight:500;min-width:90px}
+  .param-type{font-family:'SF Mono',Menlo,monospace;color:var(--orange);font-size:0.68rem;min-width:55px}
   .param-desc{color:var(--text-dim);flex:1}
-  .param-required{
-    font-size:0.6rem;background:rgba(229,89,28,0.2);color:var(--orange);
-    padding:1px 6px;border-radius:4px;
-  }
+  .param-required{font-size:0.58rem;background:rgba(229,89,28,0.15);color:var(--orange);padding:1px 6px;border-radius:4px;font-weight:600}
 
-  /* Test panel */
+  /* ── Test panel ── */
   .test-panel{
-    background:var(--bg);border:1px solid rgba(221,193,101,0.1);
+    background:var(--bg);border:1px solid rgba(221,193,101,0.08);
     border-radius:8px;padding:14px;margin-top:10px;
   }
-  .test-panel h4{font-size:0.75rem;color:var(--gold);margin-bottom:10px;font-weight:600}
+  .test-panel h4{font-size:0.72rem;color:var(--gold);margin-bottom:10px;font-weight:700}
   .test-input{
-    width:100%;background:var(--bg2);border:1px solid rgba(221,193,101,0.15);
-    color:var(--text);font-family:'SF Mono',Menlo,monospace;font-size:0.75rem;
+    width:100%;background:var(--bg2);border:1px solid rgba(221,193,101,0.12);
+    color:var(--text);font-family:'SF Mono',Menlo,monospace;font-size:0.72rem;
     padding:10px;border-radius:6px;resize:vertical;min-height:60px;
     outline:none;transition:border-color 0.2s;
   }
   .test-input:focus{border-color:var(--gold)}
+  .test-actions{display:flex;gap:8px;margin-top:8px}
   .test-btn{
-    margin-top:8px;background:var(--bg3);border:1px solid rgba(221,193,101,0.2);
-    color:var(--gold);padding:6px 16px;border-radius:6px;font-size:0.75rem;
+    background:linear-gradient(135deg,var(--orange),#D04A10);border:none;
+    color:#fff;padding:7px 18px;border-radius:6px;font-size:0.72rem;
+    cursor:pointer;transition:all 0.15s;font-weight:600;
+  }
+  .test-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(229,89,28,0.3)}
+  .copy-btn{
+    background:var(--bg3);border:1px solid rgba(221,193,101,0.15);
+    color:var(--gold);padding:7px 14px;border-radius:6px;font-size:0.72rem;
     cursor:pointer;transition:all 0.15s;font-weight:500;
   }
-  .test-btn:hover{background:var(--bg4);border-color:var(--gold)}
+  .copy-btn:hover{background:var(--bg4);border-color:var(--gold)}
   .test-result{
-    margin-top:8px;padding:10px;background:var(--bg2);
+    margin-top:10px;padding:12px;background:var(--bg2);
     border-radius:6px;font-family:'SF Mono',Menlo,monospace;
-    font-size:0.72rem;color:var(--text-dim);line-height:1.5;
-    white-space:pre-wrap;display:none;
+    font-size:0.7rem;color:var(--text-dim);line-height:1.6;
+    white-space:pre-wrap;display:none;border:1px solid rgba(221,193,101,0.06);
   }
   .test-result.visible{display:block}
 
-  /* Env vars */
-  .env-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .env-tag{
-    background:var(--bg);border:1px solid rgba(221,193,101,0.1);
-    padding:3px 10px;border-radius:6px;font-size:0.7rem;
-    font-family:'SF Mono',Menlo,monospace;color:var(--text-dim);
-  }
-  .env-tag .key{color:var(--gold)}
-  .env-tag .val{color:var(--text-dim);opacity:0.7}
+  /* ── Empty state ── */
+  .empty-tools{text-align:center;padding:40px;color:var(--text-dim);font-size:0.82rem}
+  .empty-tools .icon{font-size:2rem;margin-bottom:8px;opacity:0.3}
 
-  /* Scrollbar */
-  ::-webkit-scrollbar{width:6px}
-  ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:rgba(221,193,101,0.15);border-radius:3px}
-  ::-webkit-scrollbar-thumb:hover{background:rgba(221,193,101,0.3)}
-
-  /* Toast */
+  /* ── Toast ── */
   .toast{
-    position:fixed;bottom:24px;right:24px;background:var(--bg3);
-    border:1px solid rgba(221,193,101,0.2);border-radius:10px;
-    padding:12px 20px;color:var(--gold);font-size:0.8rem;
-    box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:200;
-    transform:translateY(100px);opacity:0;transition:all 0.3s ease;
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);
+    background:var(--bg3);border:1px solid rgba(221,193,101,0.2);
+    border-radius:10px;padding:10px 24px;color:var(--gold);font-size:0.78rem;
+    box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:300;
+    opacity:0;transition:all 0.3s ease;font-weight:500;
   }
-  .toast.visible{transform:translateY(0);opacity:1}
+  .toast.visible{transform:translateX(-50%) translateY(0);opacity:1}
 
-  /* Responsive */
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(221,193,101,0.12);border-radius:3px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(221,193,101,0.25)}
+
+  /* ── Fade in ── */
+  .fade-in{animation:fadeIn 0.25s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+  .file-input{display:none}
+
+  /* ── Responsive ── */
   @media(max-width:768px){
     .sidebar{width:220px;min-width:220px}
     .tools-grid{grid-template-columns:1fr}
+    .search-input{width:160px}
+    .search-input:focus{width:200px}
+    .search-results{width:320px}
   }
   @media(max-width:600px){
     .app{flex-direction:column}
-    .sidebar{width:100%;min-width:100%;max-height:200px;border-right:none;border-bottom:1px solid rgba(221,193,101,0.1)}
+    .sidebar{width:100%;min-width:100%;max-height:180px;border-right:none;border-bottom:1px solid rgba(221,193,101,0.08)}
+    .stats-bar{grid-template-columns:1fr 1fr 1fr}
+    .search-results{width:calc(100vw - 32px);right:-60px}
   }
 
-  /* Pulse animation for live dots */
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}
-  .server-dot{animation:pulse 2s ease-in-out infinite}
-
-  /* Fade in animation */
-  .fade-in{animation:fadeIn 0.3s ease}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-
-  /* Empty state */
-  .empty-tools{
-    text-align:center;padding:40px;color:var(--text-dim);font-size:0.85rem;
+  /* ── Keyboard hint ── */
+  .kbd{
+    display:inline-block;background:var(--bg4);border:1px solid rgba(221,193,101,0.15);
+    padding:1px 5px;border-radius:3px;font-size:0.6rem;color:var(--text-dim);
+    font-family:'SF Mono',Menlo,monospace;margin-left:6px;
   }
-  .empty-tools .icon{font-size:2rem;margin-bottom:8px;opacity:0.4}
-
-  /* Hidden file input */
-  .file-input{display:none}
-
-  /* Header input for paste */
-  .paste-area{display:none}
 </style>
 </head>
 <body>
+
+<canvas id="particles"></canvas>
 
 <div class="menubar">
   <div class="menubar-icon">⚡</div>
@@ -327,38 +425,61 @@
   </div>
   <div class="menubar-actions">
     <span class="server-count" id="serverCount">0 servers</span>
-    <button class="auto-detect-btn" onclick="loadFromClipboard()" title="Paste config from clipboard">📋 Paste</button>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="globalSearch" type="text" placeholder="Search tools…" autocomplete="off">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+    <button class="icon-btn" onclick="loadFromClipboard()" title="Paste config">📋</button>
+    <button class="icon-btn" onclick="exportConfig()" title="Export config" id="exportBtn" style="display:none">📤</button>
   </div>
 </div>
 
 <div class="app">
   <div class="sidebar" id="sidebar" style="display:none">
-    <div class="sidebar-header">MCP Servers</div>
+    <div class="sidebar-header">
+      <span>MCP Servers</span>
+      <div class="view-toggle">
+        <button id="viewList" class="active" onclick="setView('list')" title="List view">☰</button>
+        <button id="viewGraph" onclick="setView('graph')" title="Network graph">◉</button>
+        <button id="viewGrid" onclick="setView('grid')" title="Grid overview">▦</button>
+      </div>
+    </div>
     <div class="server-list" id="serverList"></div>
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-item"><div class="stat-value" id="statServers">0</div><div class="stat-label">Servers</div></div>
+      <div class="stat-item"><div class="stat-value" id="statTools">0</div><div class="stat-label">Tools</div></div>
+      <div class="stat-item"><div class="stat-value" id="statParams">0</div><div class="stat-label">Params</div></div>
+    </div>
   </div>
 
   <div class="main" id="main">
     <div class="welcome" id="welcome">
       <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
-        <div class="drop-icon">🔌</div>
+        <div class="drop-icon">⚡</div>
         <h2>Load Your MCP Config</h2>
         <p>
           Drop your <code>claude_desktop_config.json</code> here<br>
           or click to browse
         </p>
-        <p style="margin-top:12px;font-size:0.75rem">
+        <p style="margin-top:12px;font-size:0.72rem">
           Usually found at<br>
           <code>~/Library/Application Support/Claude/claude_desktop_config.json</code>
         </p>
       </div>
       <div class="or-divider">or</div>
       <div class="btn-row">
-        <button class="demo-btn" onclick="loadDemo()">🎭 Load Demo Config</button>
-        <button class="auto-detect-btn" onclick="autoDetect()">🔍 Auto-Detect</button>
+        <button class="demo-btn" onclick="loadDemo()">Load Demo Config</button>
+        <button class="auto-detect-btn" onclick="autoDetect()">Auto-Detect</button>
       </div>
+      <p style="font-size:0.68rem;color:var(--text-dim);margin-top:4px">
+        Paste with <span class="kbd">⌘V</span> anywhere
+      </p>
     </div>
 
-    <div id="detail" style="display:none" class="fade-in"></div>
+    <div id="graphView"><canvas id="graphCanvas"></canvas></div>
+    <div id="detailView" class="fade-in"></div>
+    <div id="overviewView"></div>
   </div>
 </div>
 
@@ -366,319 +487,714 @@
 <div class="toast" id="toast"></div>
 
 <script>
+// ── State ──
 let config = null;
 let servers = {};
 let activeServer = null;
 let expandedTool = null;
+let currentView = 'list'; // list, graph, grid
+let graphAnimId = null;
+let toolFilter = '';
 
-// Demo MCP config
+// ── Demo config — comprehensive set of MCP servers ──
 const DEMO_CONFIG = {
   mcpServers: {
     "filesystem": {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-filesystem", "/Users/demo/Documents"],
-      env: {}
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-filesystem", "/Users/demo/Documents"], env: {}
     },
     "github": {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-github"],
-      env: { GITHUB_PERSONAL_ACCESS_TOKEN: "ghp_***" }
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-github"],
+      env: { GITHUB_PERSONAL_ACCESS_TOKEN: "ghp_xxxxxxxxxxxx" }
     },
     "postgres": {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost:5432/mydb"],
-      env: {}
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-postgres", "postgresql://localhost:5432/mydb"], env: {}
     },
     "brave-search": {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-brave-search"],
-      env: { BRAVE_API_KEY: "BSA***" }
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-brave-search"],
+      env: { BRAVE_API_KEY: "BSAxxxxxxxxxxxx" }
     },
     "memory": {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-memory"],
-      env: {}
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-memory"], env: {}
     },
     "puppeteer": {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-puppeteer"],
-      env: {}
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-puppeteer"], env: {}
     },
     "sqlite": {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-sqlite", "--db-path", "/Users/demo/data.db"],
-      env: {}
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-sqlite", "--db-path", "/Users/demo/data.db"], env: {}
     },
     "slack": {
-      command: "npx",
-      args: ["-y", "@modelcontextprotocol/server-slack"],
-      env: { SLACK_BOT_TOKEN: "xoxb-***", SLACK_TEAM_ID: "T0***" }
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-slack"],
+      env: { SLACK_BOT_TOKEN: "xoxb-xxxxxxxxxxxx", SLACK_TEAM_ID: "T0xxxx" }
+    },
+    "fetch": {
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-fetch"], env: {}
+    },
+    "sentry": {
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-sentry"],
+      env: { SENTRY_AUTH_TOKEN: "sntrys_xxxxxxxxxxxx" }
+    },
+    "google-maps": {
+      command: "npx", args: ["-y", "@modelcontextprotocol/server-google-maps"],
+      env: { GOOGLE_MAPS_API_KEY: "AIzaxxxxxxxxxxxx" }
+    },
+    "context7": {
+      command: "npx", args: ["-y", "@upstash/context7-mcp@latest"], env: {}
     }
   }
 };
 
-// Known MCP server tool schemas
+// ── Known tool schemas ──
 const KNOWN_TOOLS = {
   "filesystem": [
-    { name: "read_file", description: "Read the complete contents of a file", params: [
-      { name: "path", type: "string", required: true, description: "Path to the file" }
+    { name: "read_file", description: "Read the complete contents of a file from the filesystem", params: [
+      { name: "path", type: "string", required: true, description: "Absolute path to the file" }
     ]},
     { name: "write_file", description: "Create or overwrite a file with new contents", params: [
-      { name: "path", type: "string", required: true, description: "Path to the file" },
+      { name: "path", type: "string", required: true, description: "Absolute path to the file" },
       { name: "content", type: "string", required: true, description: "Content to write" }
     ]},
     { name: "list_directory", description: "List directory contents with [FILE] or [DIR] prefix", params: [
       { name: "path", type: "string", required: true, description: "Path to directory" }
     ]},
-    { name: "move_file", description: "Move or rename a file/directory", params: [
+    { name: "move_file", description: "Move or rename a file or directory", params: [
       { name: "source", type: "string", required: true, description: "Source path" },
       { name: "destination", type: "string", required: true, description: "Destination path" }
     ]},
     { name: "search_files", description: "Recursively search for files matching a pattern", params: [
       { name: "path", type: "string", required: true, description: "Starting directory" },
-      { name: "pattern", type: "string", required: true, description: "Search pattern" }
+      { name: "pattern", type: "string", required: true, description: "Search pattern (glob)" }
     ]},
     { name: "get_file_info", description: "Get detailed metadata about a file or directory", params: [
       { name: "path", type: "string", required: true, description: "Path to examine" }
     ]},
-    { name: "list_allowed_directories", description: "List directories the server is allowed to access", params: []},
+    { name: "list_allowed_directories", description: "List all directories this server is allowed to access", params: []},
   ],
   "github": [
     { name: "create_or_update_file", description: "Create or update a file in a GitHub repository", params: [
       { name: "owner", type: "string", required: true, description: "Repository owner" },
       { name: "repo", type: "string", required: true, description: "Repository name" },
-      { name: "path", type: "string", required: true, description: "File path" },
+      { name: "path", type: "string", required: true, description: "File path in repo" },
       { name: "content", type: "string", required: true, description: "File content" },
       { name: "message", type: "string", required: true, description: "Commit message" },
-      { name: "branch", type: "string", required: false, description: "Branch name" }
+      { name: "branch", type: "string", required: false, description: "Target branch" }
     ]},
     { name: "search_repositories", description: "Search for GitHub repositories", params: [
       { name: "query", type: "string", required: true, description: "Search query" },
       { name: "page", type: "number", required: false, description: "Page number" }
     ]},
-    { name: "create_issue", description: "Create a new issue in a repository", params: [
+    { name: "create_issue", description: "Create a new issue in a GitHub repository", params: [
       { name: "owner", type: "string", required: true, description: "Repository owner" },
       { name: "repo", type: "string", required: true, description: "Repository name" },
       { name: "title", type: "string", required: true, description: "Issue title" },
-      { name: "body", type: "string", required: false, description: "Issue body" }
+      { name: "body", type: "string", required: false, description: "Issue description" }
     ]},
-    { name: "create_pull_request", description: "Create a new pull request", params: [
+    { name: "create_pull_request", description: "Create a pull request", params: [
       { name: "owner", type: "string", required: true, description: "Repository owner" },
       { name: "repo", type: "string", required: true, description: "Repository name" },
       { name: "title", type: "string", required: true, description: "PR title" },
       { name: "head", type: "string", required: true, description: "Head branch" },
       { name: "base", type: "string", required: true, description: "Base branch" }
     ]},
-    { name: "list_issues", description: "List issues in a repository", params: [
+    { name: "list_issues", description: "List issues in a repository with optional filters", params: [
       { name: "owner", type: "string", required: true, description: "Repository owner" },
       { name: "repo", type: "string", required: true, description: "Repository name" },
       { name: "state", type: "string", required: false, description: "Filter: open, closed, all" }
     ]},
+    { name: "get_file_contents", description: "Get contents of a file or directory from a GitHub repo", params: [
+      { name: "owner", type: "string", required: true, description: "Repository owner" },
+      { name: "repo", type: "string", required: true, description: "Repository name" },
+      { name: "path", type: "string", required: true, description: "File path" }
+    ]},
+    { name: "push_files", description: "Push multiple files in a single commit", params: [
+      { name: "owner", type: "string", required: true, description: "Repository owner" },
+      { name: "repo", type: "string", required: true, description: "Repository name" },
+      { name: "branch", type: "string", required: true, description: "Branch name" },
+      { name: "files", type: "array", required: true, description: "Array of {path, content}" },
+      { name: "message", type: "string", required: true, description: "Commit message" }
+    ]},
   ],
   "postgres": [
-    { name: "query", description: "Execute a read-only SQL query", params: [
+    { name: "query", description: "Execute a read-only SQL query against the database", params: [
       { name: "sql", type: "string", required: true, description: "SQL query to execute" }
     ]},
-    { name: "list_tables", description: "List all tables in the database", params: []},
-    { name: "describe_table", description: "Get the schema for a specific table", params: [
+    { name: "list_tables", description: "List all tables in the connected database", params: []},
+    { name: "describe_table", description: "Get the schema and columns for a table", params: [
       { name: "table_name", type: "string", required: true, description: "Table name" }
     ]},
   ],
   "brave-search": [
-    { name: "brave_web_search", description: "Search the web using Brave Search API", params: [
+    { name: "brave_web_search", description: "Perform a web search using the Brave Search API", params: [
       { name: "query", type: "string", required: true, description: "Search query" },
       { name: "count", type: "number", required: false, description: "Number of results (max 20)" }
     ]},
-    { name: "brave_local_search", description: "Search for local businesses and places", params: [
+    { name: "brave_local_search", description: "Search for local businesses and places near a location", params: [
       { name: "query", type: "string", required: true, description: "Local search query" },
       { name: "count", type: "number", required: false, description: "Number of results" }
     ]},
   ],
   "memory": [
     { name: "create_entities", description: "Create new entities in the knowledge graph", params: [
-      { name: "entities", type: "array", required: true, description: "Array of entity objects" }
+      { name: "entities", type: "array", required: true, description: "Array of {name, entityType, observations}" }
     ]},
-    { name: "create_relations", description: "Create relations between entities", params: [
-      { name: "relations", type: "array", required: true, description: "Array of relation objects" }
+    { name: "create_relations", description: "Create relations between entities in the graph", params: [
+      { name: "relations", type: "array", required: true, description: "Array of {from, to, relationType}" }
     ]},
-    { name: "search_nodes", description: "Search for nodes in the knowledge graph", params: [
+    { name: "search_nodes", description: "Full-text search for nodes in the knowledge graph", params: [
       { name: "query", type: "string", required: true, description: "Search query" }
     ]},
-    { name: "open_nodes", description: "Open specific nodes by name", params: [
+    { name: "open_nodes", description: "Open and retrieve specific nodes by name", params: [
       { name: "names", type: "array", required: true, description: "Array of node names" }
     ]},
-    { name: "delete_entities", description: "Delete entities from the knowledge graph", params: [
-      { name: "entityNames", type: "array", required: true, description: "Names to delete" }
+    { name: "add_observations", description: "Add new observations to existing entities", params: [
+      { name: "observations", type: "array", required: true, description: "Array of {entityName, contents}" }
+    ]},
+    { name: "delete_entities", description: "Delete entities and their relations from the graph", params: [
+      { name: "entityNames", type: "array", required: true, description: "Names of entities to delete" }
     ]},
   ],
   "puppeteer": [
-    { name: "puppeteer_navigate", description: "Navigate to a URL in the browser", params: [
+    { name: "puppeteer_navigate", description: "Navigate the browser to a URL", params: [
       { name: "url", type: "string", required: true, description: "URL to navigate to" }
     ]},
-    { name: "puppeteer_screenshot", description: "Take a screenshot of the current page", params: [
-      { name: "name", type: "string", required: true, description: "Screenshot name" },
-      { name: "selector", type: "string", required: false, description: "CSS selector" }
+    { name: "puppeteer_screenshot", description: "Take a screenshot of the current page or element", params: [
+      { name: "name", type: "string", required: true, description: "Screenshot identifier" },
+      { name: "selector", type: "string", required: false, description: "CSS selector to capture" },
+      { name: "width", type: "number", required: false, description: "Viewport width" },
+      { name: "height", type: "number", required: false, description: "Viewport height" }
     ]},
     { name: "puppeteer_click", description: "Click an element on the page", params: [
-      { name: "selector", type: "string", required: true, description: "CSS selector" }
+      { name: "selector", type: "string", required: true, description: "CSS selector of element" }
     ]},
-    { name: "puppeteer_fill", description: "Fill out an input field", params: [
-      { name: "selector", type: "string", required: true, description: "CSS selector" },
-      { name: "value", type: "string", required: true, description: "Value to fill" }
+    { name: "puppeteer_fill", description: "Fill an input field with text", params: [
+      { name: "selector", type: "string", required: true, description: "CSS selector of input" },
+      { name: "value", type: "string", required: true, description: "Value to type" }
     ]},
-    { name: "puppeteer_evaluate", description: "Execute JavaScript in the browser", params: [
-      { name: "script", type: "string", required: true, description: "JavaScript code" }
+    { name: "puppeteer_evaluate", description: "Execute JavaScript code in the browser context", params: [
+      { name: "script", type: "string", required: true, description: "JavaScript code to execute" }
     ]},
   ],
   "sqlite": [
-    { name: "read_query", description: "Execute a SELECT query on the database", params: [
+    { name: "read_query", description: "Execute a SELECT query on the SQLite database", params: [
       { name: "query", type: "string", required: true, description: "SELECT SQL query" }
     ]},
-    { name: "write_query", description: "Execute an INSERT, UPDATE, or DELETE query", params: [
-      { name: "query", type: "string", required: true, description: "SQL query" }
+    { name: "write_query", description: "Execute INSERT, UPDATE, or DELETE queries", params: [
+      { name: "query", type: "string", required: true, description: "SQL write query" }
     ]},
     { name: "create_table", description: "Create a new table in the database", params: [
-      { name: "query", type: "string", required: true, description: "CREATE TABLE SQL" }
+      { name: "query", type: "string", required: true, description: "CREATE TABLE statement" }
     ]},
-    { name: "list_tables", description: "List all tables in the database", params: []},
-    { name: "describe_table", description: "Get the schema of a table", params: [
+    { name: "list_tables", description: "List all tables in the SQLite database", params: []},
+    { name: "describe_table", description: "Get the schema definition of a table", params: [
       { name: "table_name", type: "string", required: true, description: "Table name" }
     ]},
   ],
   "slack": [
-    { name: "slack_list_channels", description: "List public Slack channels", params: [
+    { name: "slack_list_channels", description: "List public channels in the Slack workspace", params: [
       { name: "limit", type: "number", required: false, description: "Max channels to return" }
     ]},
     { name: "slack_post_message", description: "Post a message to a Slack channel", params: [
       { name: "channel_id", type: "string", required: true, description: "Channel ID" },
       { name: "text", type: "string", required: true, description: "Message text" }
     ]},
-    { name: "slack_reply_to_thread", description: "Reply to a message thread", params: [
+    { name: "slack_reply_to_thread", description: "Reply to a message thread in Slack", params: [
       { name: "channel_id", type: "string", required: true, description: "Channel ID" },
       { name: "thread_ts", type: "string", required: true, description: "Thread timestamp" },
       { name: "text", type: "string", required: true, description: "Reply text" }
     ]},
     { name: "slack_get_channel_history", description: "Get recent messages from a channel", params: [
       { name: "channel_id", type: "string", required: true, description: "Channel ID" },
-      { name: "limit", type: "number", required: false, description: "Max messages" }
+      { name: "limit", type: "number", required: false, description: "Max messages to return" }
+    ]},
+    { name: "slack_search_messages", description: "Search for messages across the workspace", params: [
+      { name: "query", type: "string", required: true, description: "Search query" }
+    ]},
+  ],
+  "fetch": [
+    { name: "fetch", description: "Fetch a URL from the internet and return its contents as markdown", params: [
+      { name: "url", type: "string", required: true, description: "URL to fetch" },
+      { name: "max_length", type: "number", required: false, description: "Max response length in characters" },
+      { name: "start_index", type: "number", required: false, description: "Start index for pagination" },
+      { name: "raw", type: "boolean", required: false, description: "Return raw content without markdown conversion" }
+    ]},
+  ],
+  "sentry": [
+    { name: "list_projects", description: "List all Sentry projects in your organization", params: [
+      { name: "organization_slug", type: "string", required: true, description: "Sentry org slug" }
+    ]},
+    { name: "get_issue", description: "Get details about a specific Sentry issue", params: [
+      { name: "issue_id", type: "string", required: true, description: "Sentry issue ID" }
+    ]},
+    { name: "list_issues", description: "List recent issues for a Sentry project", params: [
+      { name: "organization_slug", type: "string", required: true, description: "Org slug" },
+      { name: "project_slug", type: "string", required: true, description: "Project slug" },
+      { name: "query", type: "string", required: false, description: "Search query" }
+    ]},
+    { name: "resolve_issue", description: "Resolve or unresolve a Sentry issue", params: [
+      { name: "issue_id", type: "string", required: true, description: "Issue ID" },
+      { name: "status", type: "string", required: true, description: "resolved or unresolved" }
+    ]},
+  ],
+  "google-maps": [
+    { name: "maps_geocode", description: "Convert an address into geographic coordinates", params: [
+      { name: "address", type: "string", required: true, description: "Address to geocode" }
+    ]},
+    { name: "maps_reverse_geocode", description: "Convert coordinates to a human-readable address", params: [
+      { name: "latitude", type: "number", required: true, description: "Latitude" },
+      { name: "longitude", type: "number", required: true, description: "Longitude" }
+    ]},
+    { name: "maps_search_places", description: "Search for places using Google Maps", params: [
+      { name: "query", type: "string", required: true, description: "Search query" },
+      { name: "location", type: "string", required: false, description: "Location bias (lat,lng)" },
+      { name: "radius", type: "number", required: false, description: "Search radius in meters" }
+    ]},
+    { name: "maps_directions", description: "Get directions between two locations", params: [
+      { name: "origin", type: "string", required: true, description: "Starting point" },
+      { name: "destination", type: "string", required: true, description: "End point" },
+      { name: "mode", type: "string", required: false, description: "Travel mode: driving, walking, transit, bicycling" }
+    ]},
+    { name: "maps_distance_matrix", description: "Calculate travel time and distance between points", params: [
+      { name: "origins", type: "array", required: true, description: "Array of origin addresses" },
+      { name: "destinations", type: "array", required: true, description: "Array of destination addresses" }
+    ]},
+  ],
+  "context7": [
+    { name: "resolve-library-id", description: "Resolve a library name to its Context7-compatible ID", params: [
+      { name: "libraryName", type: "string", required: true, description: "Library name (e.g. 'react', 'nextjs')" }
+    ]},
+    { name: "get-library-docs", description: "Get up-to-date documentation for a library from Context7", params: [
+      { name: "context7CompatibleLibraryID", type: "string", required: true, description: "Library ID from resolve step" },
+      { name: "topic", type: "string", required: false, description: "Specific topic to focus on" },
+      { name: "tokens", type: "number", required: false, description: "Max response tokens (default 10000)" }
     ]},
   ],
 };
 
-// Icons for known servers
+// ── Server icons ──
 const SERVER_ICONS = {
-  filesystem: '📁', github: '🐙', postgres: '🐘', 'brave-search': '🦁',
-  memory: '🧠', puppeteer: '🎭', sqlite: '💾', slack: '💬',
-  fetch: '🌐', 'google-maps': '🗺️', sentry: '🛡️', 'everything': '🔍',
-  docker: '🐳', git: '📦', redis: '🔴', stripe: '💳',
+  filesystem:'📁', github:'🐙', postgres:'🐘', 'brave-search':'🦁',
+  memory:'🧠', puppeteer:'🎭', sqlite:'💾', slack:'💬',
+  fetch:'🌐', 'google-maps':'🗺️', sentry:'🛡️', everything:'🔍',
+  docker:'🐳', git:'📦', redis:'🔴', stripe:'💳', context7:'📚',
+  notion:'📝', linear:'📐', discord:'🎮', twilio:'📞',
 };
 
-function getServerIcon(name) {
-  const lower = name.toLowerCase();
-  for (const [key, icon] of Object.entries(SERVER_ICONS)) {
-    if (lower.includes(key)) return icon;
-  }
+const TRANSPORT_COLORS = { stdio:'var(--blue)', sse:'var(--green)', unknown:'var(--text-dim)' };
+
+function getIcon(name) {
+  const l = name.toLowerCase();
+  for (const [k, v] of Object.entries(SERVER_ICONS)) { if (l.includes(k)) return v; }
   return '⚙️';
 }
-
-function getTransportType(serverConfig) {
-  if (serverConfig.url) return 'sse';
-  if (serverConfig.command) return 'stdio';
+function getTransport(cfg) {
+  if (cfg.url) return 'sse';
+  if (cfg.command) return 'stdio';
   return 'unknown';
 }
+function getToolCount(name) { return (KNOWN_TOOLS[name] || []).length; }
+function getTotalTools() {
+  let t = 0;
+  for (const n of Object.keys(servers)) t += getToolCount(n);
+  return t;
+}
+function getTotalParams() {
+  let p = 0;
+  for (const n of Object.keys(servers)) {
+    const tools = KNOWN_TOOLS[n] || [];
+    for (const t of tools) p += (t.params || []).length;
+  }
+  return p;
+}
 
+// ── Toast ──
+let toastTimer;
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('visible');
-  setTimeout(() => t.classList.remove('visible'), 2500);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('visible'), 2800);
 }
 
+// ── Particle background ──
+function initParticles() {
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let w, h, particles = [];
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      x: Math.random() * w, y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.5, a: Math.random() * 0.3 + 0.05
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    for (const p of particles) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+      if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(221,193,101,${p.a})`;
+      ctx.fill();
+    }
+    // Draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const d = Math.sqrt(dx * dx + dy * dy);
+        if (d < 120) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(221,193,101,${0.06 * (1 - d / 120)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── Network Graph ──
+let graphNodes = [], graphEdges = [];
+
+function initGraph() {
+  const canvas = document.getElementById('graphCanvas');
+  const ctx = canvas.getContext('2d');
+  const container = document.getElementById('graphView');
+  let w, h;
+  let dragging = null, dragOff = { x: 0, y: 0 };
+  let hovered = null;
+
+  function resize() {
+    const rect = container.getBoundingClientRect();
+    w = canvas.width = rect.width;
+    h = canvas.height = rect.height;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Build nodes from servers
+  graphNodes = [];
+  graphEdges = [];
+  const names = Object.keys(servers);
+  const cx = w / 2, cy = h / 2;
+
+  // Center hub node
+  graphNodes.push({ id: 'hub', x: cx, y: cy, r: 28, label: 'MCP Hub', icon: '⚡', isHub: true, vx: 0, vy: 0 });
+
+  names.forEach((name, i) => {
+    const angle = (i / names.length) * Math.PI * 2 - Math.PI / 2;
+    const dist = 160 + Math.random() * 40;
+    graphNodes.push({
+      id: name, x: cx + Math.cos(angle) * dist, y: cy + Math.sin(angle) * dist,
+      r: 18 + getToolCount(name) * 1.5, label: name, icon: getIcon(name),
+      tools: getToolCount(name), transport: getTransport(servers[name]),
+      vx: 0, vy: 0
+    });
+    graphEdges.push({ from: 'hub', to: name });
+  });
+
+  // Simple force simulation
+  function simulate() {
+    const k = 0.005; // spring constant
+    const repulsion = 3000;
+    const damping = 0.85;
+
+    for (const node of graphNodes) {
+      if (node.isHub) continue;
+      // Repulsion between non-hub nodes
+      for (const other of graphNodes) {
+        if (other === node) continue;
+        const dx = node.x - other.x, dy = node.y - other.y;
+        const d = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+        const f = repulsion / (d * d);
+        if (!node.isHub) { node.vx += (dx / d) * f * 0.01; node.vy += (dy / d) * f * 0.01; }
+      }
+      // Spring to hub
+      const hub = graphNodes[0];
+      const dx = node.x - hub.x, dy = node.y - hub.y;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      const targetDist = 160 + node.r * 2;
+      const f = (d - targetDist) * k;
+      node.vx -= (dx / d) * f;
+      node.vy -= (dy / d) * f;
+
+      // Center gravity
+      node.vx += (cx - node.x) * 0.0003;
+      node.vy += (cy - node.y) * 0.0003;
+
+      node.vx *= damping;
+      node.vy *= damping;
+      if (node !== dragging) {
+        node.x += node.vx;
+        node.y += node.vy;
+      }
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    const time = Date.now() * 0.001;
+
+    // Edges
+    for (const e of graphEdges) {
+      const from = graphNodes.find(n => n.id === e.from);
+      const to = graphNodes.find(n => n.id === e.to);
+      if (!from || !to) continue;
+
+      const grad = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
+      grad.addColorStop(0, 'rgba(229,89,28,0.4)');
+      grad.addColorStop(1, 'rgba(221,193,101,0.15)');
+      ctx.beginPath();
+      ctx.moveTo(from.x, from.y);
+      ctx.lineTo(to.x, to.y);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = hovered === to ? 2.5 : 1.5;
+      ctx.stroke();
+
+      // Animated pulse along edge
+      const pulse = ((time * 0.5 + graphEdges.indexOf(e) * 0.3) % 1);
+      const px = from.x + (to.x - from.x) * pulse;
+      const py = from.y + (to.y - from.y) * pulse;
+      ctx.beginPath();
+      ctx.arc(px, py, 2, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(229,89,28,${0.6 * (1 - Math.abs(pulse - 0.5) * 2)})`;
+      ctx.fill();
+    }
+
+    // Nodes
+    for (const node of graphNodes) {
+      const isHov = hovered === node;
+      const r = node.r + (isHov ? 4 : 0);
+
+      // Glow
+      const glow = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, r * 2.5);
+      if (node.isHub) {
+        glow.addColorStop(0, `rgba(229,89,28,${0.15 + Math.sin(time * 2) * 0.05})`);
+        glow.addColorStop(1, 'rgba(229,89,28,0)');
+      } else {
+        const c = node.transport === 'stdio' ? '96,165,250' : '74,222,128';
+        glow.addColorStop(0, `rgba(${c},${isHov ? 0.2 : 0.08})`);
+        glow.addColorStop(1, `rgba(${c},0)`);
+      }
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
+      ctx.fill();
+
+      // Circle
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+      if (node.isHub) {
+        const grad = ctx.createLinearGradient(node.x - r, node.y - r, node.x + r, node.y + r);
+        grad.addColorStop(0, '#E5591C');
+        grad.addColorStop(1, '#DDC165');
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = isHov ? '#3A2000' : '#2E1800';
+      }
+      ctx.fill();
+      ctx.strokeStyle = node.isHub ? 'rgba(255,233,163,0.5)' : (isHov ? 'rgba(221,193,101,0.5)' : 'rgba(221,193,101,0.15)');
+      ctx.lineWidth = isHov ? 2 : 1;
+      ctx.stroke();
+
+      // Icon
+      ctx.font = `${node.isHub ? 20 : 16}px system-ui`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.icon, node.x, node.y);
+
+      // Label
+      ctx.font = `${isHov ? '600' : '500'} ${isHov ? 12 : 10}px -apple-system, system-ui, sans-serif`;
+      ctx.fillStyle = isHov ? '#FFE9A3' : '#E8D5B8';
+      ctx.fillText(node.label, node.x, node.y + r + 14);
+
+      // Tool count
+      if (node.tools) {
+        ctx.font = '600 9px -apple-system, system-ui, sans-serif';
+        ctx.fillStyle = 'rgba(221,193,101,0.6)';
+        ctx.fillText(`${node.tools} tools`, node.x, node.y + r + 26);
+      }
+    }
+
+    simulate();
+    graphAnimId = requestAnimationFrame(draw);
+  }
+
+  // Mouse interaction
+  canvas.onmousemove = (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+    hovered = null;
+    for (const node of graphNodes) {
+      const dx = mx - node.x, dy = my - node.y;
+      if (Math.sqrt(dx * dx + dy * dy) < node.r + 8) { hovered = node; break; }
+    }
+    canvas.style.cursor = hovered ? 'pointer' : 'default';
+    if (dragging) {
+      dragging.x = mx + dragOff.x;
+      dragging.y = my + dragOff.y;
+    }
+  };
+  canvas.onmousedown = (e) => {
+    if (hovered && !hovered.isHub) {
+      dragging = hovered;
+      const rect = canvas.getBoundingClientRect();
+      dragOff.x = hovered.x - (e.clientX - rect.left);
+      dragOff.y = hovered.y - (e.clientY - rect.top);
+    }
+  };
+  canvas.onmouseup = () => {
+    if (dragging && hovered === dragging) {
+      selectServer(dragging.id);
+      setView('list');
+    }
+    dragging = null;
+  };
+  canvas.onmouseleave = () => { hovered = null; dragging = null; };
+
+  if (graphAnimId) cancelAnimationFrame(graphAnimId);
+  draw();
+}
+
+// ── View switching ──
+function setView(view) {
+  currentView = view;
+  document.getElementById('viewList').classList.toggle('active', view === 'list');
+  document.getElementById('viewGraph').classList.toggle('active', view === 'graph');
+  document.getElementById('viewGrid').classList.toggle('active', view === 'grid');
+
+  document.getElementById('graphView').style.display = view === 'graph' ? 'flex' : 'none';
+  document.getElementById('detailView').style.display = view === 'list' && activeServer ? '' : 'none';
+  document.getElementById('overviewView').style.display = view === 'grid' ? '' : 'none';
+
+  if (view === 'graph') initGraph();
+  if (view === 'grid') renderOverview();
+  if (view === 'list' && activeServer) renderDetail();
+  if (graphAnimId && view !== 'graph') { cancelAnimationFrame(graphAnimId); graphAnimId = null; }
+}
+
+// ── Load config ──
 function loadConfig(data) {
   try {
     config = typeof data === 'string' ? JSON.parse(data) : data;
     servers = config.mcpServers || config.MCP_SERVERS || config;
-    if (typeof servers !== 'object' || Array.isArray(servers)) throw new Error('Invalid config format');
+    if (typeof servers !== 'object' || Array.isArray(servers)) throw new Error('Invalid config structure — expected mcpServers object');
 
     const count = Object.keys(servers).length;
     document.getElementById('serverCount').textContent = `${count} server${count !== 1 ? 's' : ''}`;
     document.getElementById('sidebar').style.display = '';
     document.getElementById('welcome').style.display = 'none';
-    document.getElementById('detail').style.display = 'none';
-
+    document.getElementById('exportBtn').style.display = '';
+    updateStats();
     renderServerList();
     if (count > 0) selectServer(Object.keys(servers)[0]);
-    showToast(`Loaded ${count} MCP servers`);
+    showToast(`Loaded ${count} MCP servers · ${getTotalTools()} tools`);
   } catch (e) {
     showToast('Error: ' + e.message);
   }
 }
 
+function updateStats() {
+  document.getElementById('statServers').textContent = Object.keys(servers).length;
+  document.getElementById('statTools').textContent = getTotalTools();
+  document.getElementById('statParams').textContent = getTotalParams();
+}
+
+// ── Server list ──
 function renderServerList() {
   const list = document.getElementById('serverList');
   list.innerHTML = '';
   for (const [name, cfg] of Object.entries(servers)) {
-    const type = getTransportType(cfg);
-    const tools = KNOWN_TOOLS[name];
+    const type = getTransport(cfg);
+    const tc = getToolCount(name);
     const el = document.createElement('div');
     el.className = 'server-item' + (name === activeServer ? ' active' : '');
-    el.onclick = () => selectServer(name);
+    el.onclick = () => { selectServer(name); if (currentView !== 'list') setView('list'); };
     el.innerHTML = `
       <div class="server-dot ${type}"></div>
       <div class="server-info">
-        <div class="server-name">${getServerIcon(name)} ${name}</div>
-        <div class="server-type">${type}${tools ? ` · ${tools.length} tools` : ''}</div>
+        <div class="server-name">${getIcon(name)} ${name}</div>
+        <div class="server-type">${type}${tc ? ` · ${tc} tools` : ''}</div>
       </div>
+      ${tc ? `<span class="tool-count-badge">${tc}</span>` : ''}
     `;
     list.appendChild(el);
   }
 }
 
+// ── Select server ──
 function selectServer(name) {
   activeServer = name;
   expandedTool = null;
+  toolFilter = '';
   renderServerList();
-  renderDetail();
+  if (currentView === 'list') {
+    document.getElementById('detailView').style.display = '';
+    document.getElementById('graphView').style.display = 'none';
+    document.getElementById('overviewView').style.display = 'none';
+    renderDetail();
+  }
 }
 
+// ── Detail view ──
 function renderDetail() {
   const cfg = servers[activeServer];
-  const type = getTransportType(cfg);
+  if (!cfg) return;
+  const type = getTransport(cfg);
   const tools = KNOWN_TOOLS[activeServer] || [];
-  const detail = document.getElementById('detail');
+  const detail = document.getElementById('detailView');
   detail.style.display = '';
   detail.className = 'fade-in';
 
-  const envKeys = cfg.env ? Object.keys(cfg.env) : [];
+  const envKeys = cfg.env ? Object.keys(cfg.env).filter(k => cfg.env[k]) : [];
   const cmdLine = cfg.command ? [cfg.command, ...(cfg.args || [])].join(' ') : cfg.url || 'N/A';
+
+  const filteredTools = toolFilter
+    ? tools.filter(t => t.name.toLowerCase().includes(toolFilter) || t.description.toLowerCase().includes(toolFilter))
+    : tools;
 
   let html = `
     <div class="detail-header">
-      <div class="detail-icon">${getServerIcon(activeServer)}</div>
-      <div>
+      <div class="detail-icon">${getIcon(activeServer)}</div>
+      <div style="flex:1">
         <div class="detail-title">${activeServer}</div>
-        <div class="detail-meta">${cmdLine}</div>
-        <div class="detail-badge"><span class="dot" style="background:${type === 'stdio' ? 'var(--blue)' : 'var(--green)'}"></span> ${type.toUpperCase()} transport</div>
+        <div class="detail-meta">${escHtml(cmdLine)}</div>
+        <div class="detail-badges">
+          <span class="detail-badge"><span class="dot" style="background:${TRANSPORT_COLORS[type]}"></span>${type.toUpperCase()}</span>
+          ${tools.length ? `<span class="detail-badge">${tools.length} tools</span>` : ''}
+          ${envKeys.length ? `<span class="detail-badge">${envKeys.length} env vars</span>` : ''}
+        </div>
       </div>
     </div>
 
     ${envKeys.length ? `
-    <div style="margin-top:4px">
-      <div class="env-list">
-        ${envKeys.map(k => {
-          const v = cfg.env[k];
-          const masked = v.length > 6 ? v.slice(0, 4) + '•••' : '•••';
-          return `<span class="env-tag"><span class="key">${k}</span>=<span class="val">${masked}</span></span>`;
-        }).join('')}
-      </div>
+    <div class="env-list" style="margin-top:10px">
+      ${envKeys.map(k => {
+        const v = String(cfg.env[k]);
+        const masked = v.length > 8 ? v.slice(0, 4) + '····' + v.slice(-2) : '····';
+        return `<span class="env-tag"><span class="key">${escHtml(k)}</span>=<span class="val">${masked}</span></span>`;
+      }).join('')}
     </div>
     ` : ''}
 
-    <details class="config-panel">
+    <details class="config-panel" style="margin-top:12px">
       <summary>Raw Configuration</summary>
-      <div class="config-body">
-        <div class="config-json">${JSON.stringify(cfg, null, 2)}</div>
-      </div>
+      <div class="config-body"><div class="config-json">${escHtml(JSON.stringify(cfg, null, 2))}</div></div>
     </details>
   `;
 
@@ -686,19 +1202,21 @@ function renderDetail() {
     html += `
       <div class="tools-section">
         <h3>Available Tools <span class="count">${tools.length}</span></h3>
+        ${tools.length > 4 ? `<input class="tools-filter" type="text" placeholder="Filter tools…" value="${escHtml(toolFilter)}" oninput="toolFilter=this.value.toLowerCase();renderDetail()">` : ''}
         <div class="tools-grid">
-          ${tools.map((t, i) => renderToolCard(t, i)).join('')}
+          ${filteredTools.map((t, i) => renderToolCard(t, tools.indexOf(t))).join('')}
         </div>
+        ${filteredTools.length === 0 ? '<p style="color:var(--text-dim);font-size:0.78rem;padding:12px">No tools match filter</p>' : ''}
       </div>
     `;
   } else {
     html += `
       <div class="empty-tools">
         <div class="icon">🔧</div>
-        <p>Tool schemas not available for this server.<br>
-        <span style="font-size:0.75rem;color:var(--text-dim)">
-          Connect to the running server to discover tools dynamically.
-        </span></p>
+        <p>Tool schemas not available for this server</p>
+        <p style="font-size:0.72rem;color:var(--text-dim);margin-top:4px">
+          Known schemas: ${Object.keys(KNOWN_TOOLS).join(', ')}
+        </p>
       </div>
     `;
   }
@@ -710,22 +1228,21 @@ function renderToolCard(tool, index) {
   const isExpanded = expandedTool === index;
   let html = `
     <div class="tool-card${isExpanded ? ' expanded' : ''}" onclick="toggleTool(${index})">
-      <div class="tool-name"><span class="fn-icon">ƒ</span> ${tool.name}</div>
-      <div class="tool-desc">${tool.description}</div>
+      <div class="tool-name"><span class="fn-icon">ƒ</span> ${escHtml(tool.name)}</div>
+      <div class="tool-desc">${escHtml(tool.description)}</div>
   `;
 
-  if (isExpanded && tool.params) {
+  if (isExpanded) {
     html += `<div class="tool-detail">`;
-
-    if (tool.params.length > 0) {
+    if (tool.params && tool.params.length > 0) {
       html += `
         <div class="schema-section">
           <div class="schema-title">Parameters</div>
           ${tool.params.map(p => `
             <div class="param-row">
-              <span class="param-name">${p.name}</span>
-              <span class="param-type">${p.type}</span>
-              <span class="param-desc">${p.description}</span>
+              <span class="param-name">${escHtml(p.name)}</span>
+              <span class="param-type">${escHtml(p.type)}</span>
+              <span class="param-desc">${escHtml(p.description)}</span>
               ${p.required ? '<span class="param-required">required</span>' : ''}
             </div>
           `).join('')}
@@ -733,24 +1250,26 @@ function renderToolCard(tool, index) {
       `;
     }
 
-    // Test panel
     const sampleInput = {};
-    tool.params.filter(p => p.required).forEach(p => {
-      if (p.type === 'string') sampleInput[p.name] = `<${p.name}>`;
+    (tool.params || []).filter(p => p.required).forEach(p => {
+      if (p.type === 'string') sampleInput[p.name] = '';
       else if (p.type === 'number') sampleInput[p.name] = 0;
       else if (p.type === 'array') sampleInput[p.name] = [];
+      else if (p.type === 'boolean') sampleInput[p.name] = false;
       else sampleInput[p.name] = null;
     });
 
     html += `
       <div class="test-panel" onclick="event.stopPropagation()">
-        <h4>🧪 Test Input</h4>
-        <textarea class="test-input" id="testInput-${index}" spellcheck="false">${JSON.stringify(sampleInput, null, 2)}</textarea>
-        <button class="test-btn" onclick="simulateTest(${index})">▶ Simulate Call</button>
+        <h4>Test Input</h4>
+        <textarea class="test-input" id="testInput-${index}" spellcheck="false">${escHtml(JSON.stringify(sampleInput, null, 2))}</textarea>
+        <div class="test-actions">
+          <button class="test-btn" onclick="simulateTest(${index})">▶ Simulate Call</button>
+          <button class="copy-btn" onclick="copyMcpCall(${index})">Copy JSON-RPC</button>
+        </div>
         <div class="test-result" id="testResult-${index}"></div>
       </div>
     `;
-
     html += `</div>`;
   }
 
@@ -770,22 +1289,128 @@ function simulateTest(index) {
     const parsed = JSON.parse(input.value);
     const tools = KNOWN_TOOLS[activeServer];
     const tool = tools[index];
+    const rpc = {
+      jsonrpc: "2.0", id: 1,
+      method: "tools/call",
+      params: { name: tool.name, arguments: parsed }
+    };
     result.className = 'test-result visible';
-    result.innerHTML = `<span style="color:var(--gold)">→ ${activeServer}.${tool.name}()</span>\n\n` +
-      `<span style="color:var(--text-dim)">// Simulated MCP request:</span>\n` +
-      `<span style="color:var(--green)">${JSON.stringify({
-        jsonrpc: "2.0",
-        id: 1,
-        method: "tools/call",
-        params: { name: tool.name, arguments: parsed }
-      }, null, 2)}</span>\n\n` +
-      `<span style="color:var(--text-dim)">// This would be sent to the ${activeServer} MCP server via ${getTransportType(servers[activeServer])} transport.</span>`;
+    result.innerHTML =
+      `<span style="color:var(--gold)">→ ${escHtml(activeServer)}.${escHtml(tool.name)}()</span>\n\n` +
+      `<span style="color:var(--text-dim)">// JSON-RPC request:</span>\n` +
+      `<span style="color:var(--green)">${escHtml(JSON.stringify(rpc, null, 2))}</span>\n\n` +
+      `<span style="color:var(--text-dim)">// Transport: ${getTransport(servers[activeServer]).toUpperCase()} → ${escHtml(activeServer)}</span>`;
   } catch (e) {
     result.className = 'test-result visible';
-    result.innerHTML = `<span style="color:var(--red)">Invalid JSON: ${e.message}</span>`;
+    result.innerHTML = `<span style="color:var(--red)">Invalid JSON: ${escHtml(e.message)}</span>`;
   }
 }
 
+function copyMcpCall(index) {
+  try {
+    const input = document.getElementById(`testInput-${index}`);
+    const parsed = JSON.parse(input.value);
+    const tools = KNOWN_TOOLS[activeServer];
+    const tool = tools[index];
+    const rpc = { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: tool.name, arguments: parsed }};
+    navigator.clipboard.writeText(JSON.stringify(rpc, null, 2));
+    showToast('JSON-RPC copied to clipboard');
+  } catch (e) {
+    showToast('Fix JSON input first');
+  }
+}
+
+// ── Overview grid ──
+function renderOverview() {
+  const container = document.getElementById('overviewView');
+  let html = '<div class="overview-grid">';
+  for (const [name, cfg] of Object.entries(servers)) {
+    const tools = KNOWN_TOOLS[name] || [];
+    const type = getTransport(cfg);
+    const maxShow = 5;
+    html += `
+      <div class="overview-card" onclick="selectServer('${name}');setView('list')">
+        <div class="oc-header">
+          <span class="oc-icon">${getIcon(name)}</span>
+          <div>
+            <div class="oc-name">${escHtml(name)}</div>
+            <div class="oc-transport">${type} · ${tools.length} tools</div>
+          </div>
+        </div>
+        <div class="oc-tools">
+          ${tools.slice(0, maxShow).map(t => `<span class="oc-tool-tag">${escHtml(t.name)}</span>`).join('')}
+          ${tools.length > maxShow ? `<span class="oc-tool-more">+${tools.length - maxShow} more</span>` : ''}
+        </div>
+      </div>
+    `;
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ── Global search ──
+const searchInput = document.getElementById('globalSearch');
+const searchResults = document.getElementById('searchResults');
+
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  if (!q || !config) { searchResults.classList.remove('visible'); return; }
+
+  const results = [];
+  for (const [name, cfg] of Object.entries(servers)) {
+    const tools = KNOWN_TOOLS[name] || [];
+    for (const tool of tools) {
+      const nameMatch = tool.name.toLowerCase().includes(q);
+      const descMatch = tool.description.toLowerCase().includes(q);
+      if (nameMatch || descMatch) {
+        results.push({ server: name, tool, nameMatch, descMatch });
+      }
+    }
+    // Also match server names
+    if (name.toLowerCase().includes(q)) {
+      results.push({ server: name, tool: null, nameMatch: true, descMatch: false });
+    }
+  }
+
+  if (results.length === 0) {
+    searchResults.innerHTML = '<div class="search-result-item"><span style="color:var(--text-dim)">No results found</span></div>';
+  } else {
+    searchResults.innerHTML = results.slice(0, 12).map(r => {
+      if (!r.tool) {
+        return `<div class="search-result-item" onclick="selectServer('${r.server}');setView('list');clearSearch()">
+          <div class="sr-name">${getIcon(r.server)} ${highlight(r.server, q)}</div>
+          <div class="sr-server">Server · ${getToolCount(r.server)} tools</div>
+        </div>`;
+      }
+      return `<div class="search-result-item" onclick="selectServer('${r.server}');setView('list');clearSearch()">
+        <div class="sr-name"><span class="fn-icon" style="color:var(--orange);font-size:0.7rem">ƒ</span> ${highlight(r.tool.name, q)}</div>
+        <div class="sr-server">${getIcon(r.server)} ${r.server}</div>
+        <div class="sr-desc">${highlight(r.tool.description, q)}</div>
+      </div>`;
+    }).join('');
+  }
+  searchResults.classList.add('visible');
+});
+
+searchInput.addEventListener('blur', () => {
+  setTimeout(() => searchResults.classList.remove('visible'), 200);
+});
+searchInput.addEventListener('focus', () => {
+  if (searchInput.value.trim()) searchInput.dispatchEvent(new Event('input'));
+});
+
+function clearSearch() {
+  searchInput.value = '';
+  searchResults.classList.remove('visible');
+}
+
+function highlight(text, query) {
+  const idx = text.toLowerCase().indexOf(query);
+  if (idx === -1) return escHtml(text);
+  return escHtml(text.slice(0, idx)) + `<span class="sr-highlight">${escHtml(text.slice(idx, idx + query.length))}</span>` + escHtml(text.slice(idx + query.length));
+}
+
+// ── File handling ──
 function handleFile(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -794,12 +1419,10 @@ function handleFile(event) {
   reader.readAsText(file);
 }
 
-function loadDemo() {
-  loadConfig(DEMO_CONFIG);
-}
+function loadDemo() { loadConfig(DEMO_CONFIG); }
 
 function autoDetect() {
-  showToast('Auto-detect reads your local config — use the file picker or paste instead');
+  showToast('Browser cannot read local files — use the file picker or paste');
   document.getElementById('fileInput').click();
 }
 
@@ -808,22 +1431,33 @@ async function loadFromClipboard() {
     const text = await navigator.clipboard.readText();
     loadConfig(text);
   } catch (e) {
-    showToast('Clipboard access denied — try drag & drop instead');
+    showToast('Clipboard access denied — use drag & drop or file picker');
   }
 }
 
-// Drag and drop
-const dropZone = document.getElementById('dropZone');
-['dragenter','dragover'].forEach(e => {
+function exportConfig() {
+  if (!config) return;
+  const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'mcp_config.json'; a.click();
+  URL.revokeObjectURL(url);
+  showToast('Config exported');
+}
+
+// ── Drag & drop ──
+['dragenter', 'dragover'].forEach(e => {
   document.addEventListener(e, ev => {
     ev.preventDefault();
-    dropZone && dropZone.classList.add('drag-over');
+    const dz = document.getElementById('dropZone');
+    if (dz) dz.classList.add('drag-over');
   });
 });
-['dragleave','drop'].forEach(e => {
+['dragleave', 'drop'].forEach(e => {
   document.addEventListener(e, ev => {
     ev.preventDefault();
-    dropZone && dropZone.classList.remove('drag-over');
+    const dz = document.getElementById('dropZone');
+    if (dz) dz.classList.remove('drag-over');
   });
 });
 document.addEventListener('drop', ev => {
@@ -835,12 +1469,39 @@ document.addEventListener('drop', ev => {
   }
 });
 
-// Keyboard shortcut: Cmd+V to paste config
+// ── Keyboard shortcuts ──
 document.addEventListener('keydown', e => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'v' && !activeServer) {
+  // Cmd+V to paste config when no server loaded
+  if ((e.metaKey || e.ctrlKey) && e.key === 'v' && !config) {
     loadFromClipboard();
   }
+  // Cmd+K to focus search
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    searchInput.focus();
+  }
+  // Escape to close search
+  if (e.key === 'Escape') {
+    clearSearch();
+    searchInput.blur();
+  }
+  // 1/2/3 for views
+  if (!e.metaKey && !e.ctrlKey && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+    if (e.key === '1' && config) setView('list');
+    if (e.key === '2' && config) setView('graph');
+    if (e.key === '3' && config) setView('grid');
+  }
 });
+
+// ── Utils ──
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ── Init ──
+initParticles();
 </script>
 </body>
 </html>
